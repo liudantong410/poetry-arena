@@ -1,0 +1,24 @@
+{
+  "name": "诗阵 · 诗词挑战",
+  "short_name": "诗阵",
+  "description": "面向资深诗词爱好者的纯诗词高难度挑战网页游戏",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f5f0e8",
+  "theme_color": "#1a1a2e",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='32' fill='%231a1a2e'/><text x='96' y='130' font-size='120' fill='%23c41e3a' text-anchor='middle' font-family='serif' font-weight='bold'>诗</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='80' fill='%231a1a2e'/><text x='256' y='350' font-size='320' fill='%23c41e3a' text-anchor='middle' font-family='serif' font-weight='bold'>诗</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

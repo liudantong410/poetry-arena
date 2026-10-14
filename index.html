@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="description" content="诗阵 — 面向资深诗词爱好者的纯诗词高难度挑战网页游戏">
+  <meta name="theme-color" content="#1a1a2e">
+  <title>诗阵 · 诗词挑战</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' fill='%23c41e3a'>诗</text></svg>">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ========== 首页 ========== -->
+<div id="screen-home" class="screen active">
+  <div class="home-container">
+    <div class="brand">
+      <div class="brand-title">诗 阵</div>
+      <div class="brand-sub">诗词挑战 · AI 对决</div>
+    </div>
+
+    <div class="mode-list">
+      <div class="mode-card" data-mode="fly-flower">
+        <div class="mode-icon">飞</div>
+        <div class="mode-info">
+          <div class="mode-name">飞花令 · AI 擂台</div>
+          <div class="mode-desc">与 AI 轮流说出含指定关键字的诗句，接不出者负</div>
+          <div class="mode-meta">3-6 分钟 · 单局</div>
+        </div>
+      </div>
+
+      <div class="mode-card" data-mode="chain">
+        <div class="mode-icon">龙</div>
+        <div class="mode-info">
+          <div class="mode-name">接龙 · AI 对战</div>
+          <div class="mode-desc">上句末字即下句首字，用冷门句堵死 AI</div>
+          <div class="mode-meta">2-5 分钟 · 单局</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="difficulty-section">
+      <div class="section-label">选择难度</div>
+      <div class="diff-buttons">
+        <button class="diff-btn" data-diff="easy">
+          <span class="diff-name">秀才</span>
+          <span class="diff-info">30s/回合 · 名篇为主</span>
+        </button>
+        <button class="diff-btn active" data-diff="medium">
+          <span class="diff-name">举人</span>
+          <span class="diff-info">25s/回合 · 含冷门</span>
+        </button>
+        <button class="diff-btn" data-diff="hard">
+          <span class="diff-name">翰林</span>
+          <span class="diff-info">20s/回合 · 全冷门</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="stats-bar" id="db-stats">题库加载中...</div>
+
+    <div class="home-footer">
+      <span>纯诗词 · 零广告 · 零登录 · GitHub Pages</span>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 游戏页 ========== -->
+<div id="screen-game" class="screen">
+  <div class="game-header">
+    <button id="btn-back" class="icon-btn">← 返回</button>
+    <div class="game-title" id="game-title"></div>
+    <div class="game-desc" id="game-desc"></div>
+  </div>
+
+  <div class="game-score-bar">
+    <div class="score-side player-side">
+      <div class="score-label">你</div>
+      <div class="score-value" id="score-player">0</div>
+    </div>
+    <div class="score-vs">VS</div>
+    <div class="score-side ai-side">
+      <div class="score-label">AI</div>
+      <div class="score-value" id="score-ai">0</div>
+    </div>
+  </div>
+
+  <div class="game-board">
+    <!-- 飞花令目标字 -->
+    <div class="ff-target-area" id="ff-target-area" style="display:none;">
+      <div class="ff-target-label">飞花令关键字</div>
+      <div class="ff-target-char" id="ff-target"></div>
+    </div>
+
+    <!-- 回合指示 -->
+    <div class="turn-bar" id="turn-indicator">
+      准备开始...
+    </div>
+
+    <!-- 计时器 -->
+    <div class="timer-area">
+      <div class="timer-display" id="timer-display">--</div>
+      <div class="timer-track">
+        <div class="timer-bar" id="timer-bar"></div>
+      </div>
+    </div>
+
+    <!-- 历史 -->
+    <div class="history-area">
+      <div class="history-list" id="history-list"></div>
+    </div>
+
+    <!-- 输入区 -->
+    <div class="input-area" id="input-area" style="display:none;">
+      <div class="input-hint" id="input-hint"></div>
+      <div class="input-row">
+        <input type="text" id="game-input" placeholder="输入诗句..." autocomplete="off" autocapitalize="off" spellcheck="false">
+        <button id="btn-submit" class="btn-primary">出句</button>
+        <button id="btn-pass" class="btn-secondary">认输</button>
+      </div>
+      <div class="error-msg" id="error-msg"></div>
+    </div>
+  </div>
+
+  <!-- 开始按钮（初始显示） -->
+  <div class="start-area" id="start-area">
+    <button id="btn-start" class="btn-start">开 始 对 阵</button>
+  </div>
+</div>
+
+<!-- ========== 结果弹窗 ========== -->
+<div id="result-modal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="result-title" id="result-title"></div>
+    <div class="result-reason" id="result-reason"></div>
+    <div class="result-score" id="result-score"></div>
+    <div class="result-poems" id="result-poems"></div>
+    <div class="result-actions">
+      <button id="btn-replay" class="btn-primary">再来一局</button>
+      <button id="btn-home" class="btn-secondary">返回菜单</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/poetry-db.js"></script>
+<script src="js/fly-flower.js"></script>
+<script src="js/chain.js"></script>
+<script src="js/app.js"></script>
+<script>
+  // 注册 Service Worker（仅在线环境）
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+</script>
+</body>
+</html>
