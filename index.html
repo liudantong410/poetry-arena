@@ -8,7 +8,7 @@
   <title>诗阵 · 诗词挑战</title>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' fill='%23c41e3a'>诗</text></svg>">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -17,7 +17,7 @@
   <div class="home-container">
     <div class="brand">
       <div class="brand-title">诗 阵</div>
-      <div class="brand-sub">诗词挑战 · AI 对决</div>
+      <div class="brand-sub">诗词挑战 · AI 对决 · 聚会炸弹</div>
     </div>
 
     <div class="mode-list">
@@ -26,7 +26,7 @@
         <div class="mode-info">
           <div class="mode-name">飞花令 · AI 擂台</div>
           <div class="mode-desc">与 AI 轮流说出含指定关键字的诗句，接不出者负</div>
-          <div class="mode-meta">3-6 分钟 · 单局</div>
+          <div class="mode-meta">3-6 分钟 · 单人 vs AI</div>
         </div>
       </div>
 
@@ -35,25 +35,52 @@
         <div class="mode-info">
           <div class="mode-name">接龙 · AI 对战</div>
           <div class="mode-desc">上句末字即下句首字，用冷门句堵死 AI</div>
-          <div class="mode-meta">2-5 分钟 · 单局</div>
+          <div class="mode-meta">2-5 分钟 · 单人 vs AI</div>
+        </div>
+      </div>
+
+      <div class="mode-card" data-mode="idiom-chain">
+        <div class="mode-icon">成</div>
+        <div class="mode-info">
+          <div class="mode-name">成语接龙 · AI 对战</div>
+          <div class="mode-desc">顶针格接龙，上句末字即下句首字，接不出者负</div>
+          <div class="mode-meta">2-5 分钟 · 单人 vs AI</div>
+        </div>
+      </div>
+
+      <div class="mode-card" data-mode="bomb-poem">
+        <div class="mode-icon bomb">雷</div>
+        <div class="mode-info">
+          <div class="mode-name">诗词炸弹 <span class="tag-new">新</span></div>
+          <div class="mode-desc">含关键字的诗句中藏了一句"炸弹"，谁说出谁炸</div>
+          <div class="mode-meta">3-5 分钟 · 你 + 3 名 AI 轮坐</div>
+        </div>
+      </div>
+
+      <div class="mode-card" data-mode="bomb-word-menu">
+        <div class="mode-icon bomb">弹</div>
+        <div class="mode-info">
+          <div class="mode-name">词语炸弹 <span class="tag-new">新</span></div>
+          <div class="mode-desc">首字母"BM"的词里藏着炸弹词，聚会联机踩雷者输</div>
+          <div class="mode-meta">2-5 分钟 · 单人 / 2-8 人联机</div>
         </div>
       </div>
     </div>
 
     <div class="difficulty-section">
-      <div class="section-label">选择难度</div>
+      <div class="section-label">AI 难度（飞花令 / 接龙 / 成语接龙 / 诗词炸弹）</div>
       <div class="diff-buttons">
         <button class="diff-btn" data-diff="easy">
           <span class="diff-name">秀才</span>
-          <span class="diff-info">30s/回合 · 名篇为主</span>
+          <span class="diff-info">60s/回合 · 名篇为主</span>
         </button>
         <button class="diff-btn active" data-diff="medium">
           <span class="diff-name">举人</span>
-          <span class="diff-info">25s/回合 · 含冷门</span>
+          <span class="diff-info">45s/回合 · 含冷门</span>
         </button>
         <button class="diff-btn" data-diff="hard">
           <span class="diff-name">翰林</span>
-          <span class="diff-info">20s/回合 · 全冷门</span>
+          <span class="diff-info">30s/回合 · 全冷门</span>
         </button>
       </div>
     </div>
@@ -66,10 +93,10 @@
   </div>
 </div>
 
-<!-- ========== 游戏页 ========== -->
-<div id="screen-game" class="screen">
+<!-- ========== 飞花令 / 接龙 游戏屏 ========== -->
+<div id="screen-duel" class="screen">
   <div class="game-header">
-    <button id="btn-back" class="icon-btn">← 返回</button>
+    <button class="icon-btn btn-duel-back">← 返回</button>
     <div class="game-title" id="game-title"></div>
     <div class="game-desc" id="game-desc"></div>
   </div>
@@ -87,18 +114,13 @@
   </div>
 
   <div class="game-board">
-    <!-- 飞花令目标字 -->
     <div class="ff-target-area" id="ff-target-area" style="display:none;">
       <div class="ff-target-label">飞花令关键字</div>
       <div class="ff-target-char" id="ff-target"></div>
     </div>
 
-    <!-- 回合指示 -->
-    <div class="turn-bar" id="turn-indicator">
-      准备开始...
-    </div>
+    <div class="turn-bar" id="turn-indicator">准备开始...</div>
 
-    <!-- 计时器 -->
     <div class="timer-area">
       <div class="timer-display" id="timer-display">--</div>
       <div class="timer-track">
@@ -106,12 +128,10 @@
       </div>
     </div>
 
-    <!-- 历史 -->
     <div class="history-area">
       <div class="history-list" id="history-list"></div>
     </div>
 
-    <!-- 输入区 -->
     <div class="input-area" id="input-area" style="display:none;">
       <div class="input-hint" id="input-hint"></div>
       <div class="input-row">
@@ -123,13 +143,135 @@
     </div>
   </div>
 
-  <!-- 开始按钮（初始显示） -->
   <div class="start-area" id="start-area">
     <button id="btn-start" class="btn-start">开 始 对 阵</button>
   </div>
 </div>
 
-<!-- ========== 结果弹窗 ========== -->
+<!-- ========== 词语炸弹 菜单屏 ========== -->
+<div id="screen-bomb-menu" class="screen">
+  <div class="subpage">
+    <div class="subpage-header">
+      <button class="icon-btn btn-home-back">← 返回</button>
+      <div class="game-title">词语炸弹</div>
+    </div>
+    <div class="bomb-menu-body">
+      <div class="bomb-rules">
+        <div class="bomb-rules-title">玩法</div>
+        <p>系统给出拼音首字母（如 <b>BM</b>），所有符合的词里藏着<b>唯一一个炸弹词</b>。大家轮流说词，安全词逐个排除，候选越来越少——<b>谁踩中炸弹词谁输</b>。AI 也不知道炸弹是哪个，人人平等，全拼词汇量与胆识。</p>
+      </div>
+
+      <div class="bomb-menu-list">
+        <button class="big-action" id="btn-bomb-solo">
+          <span class="big-action-title">单人挑战</span>
+          <span class="big-action-desc">你 + 3 名 AI 围坐轮词</span>
+        </button>
+        <button class="big-action" id="btn-bomb-host">
+          <span class="big-action-title">创建房间 · 多人联机</span>
+          <span class="big-action-desc">聚会同玩，2-8 人，可加 AI 凑数</span>
+        </button>
+        <div class="join-row">
+          <input type="text" id="join-name" class="mini-input" placeholder="你的昵称" maxlength="8">
+          <input type="text" id="join-code" class="mini-input code" placeholder="房间号" maxlength="4">
+          <button class="btn-primary" id="btn-bomb-join">加入</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 联机大厅屏 ========== -->
+<div id="screen-lobby" class="screen">
+  <div class="subpage">
+    <div class="subpage-header">
+      <button class="icon-btn" id="btn-lobby-back">← 返回</button>
+      <div class="game-title">游戏房间</div>
+    </div>
+    <div class="lobby-body">
+      <div class="lobby-code-box" id="lobby-code-box" style="display:none;">
+        <div class="lobby-code-label">房间号（分享给朋友）</div>
+        <div class="lobby-code" id="lobby-code">----</div>
+        <button class="btn-secondary" id="btn-copy-code">复制房间号</button>
+      </div>
+      <div class="lobby-code-box" id="lobby-wait-box" style="display:none;">
+        <div class="lobby-code-label">已加入房间，等待房主开始…</div>
+      </div>
+      <div class="lobby-players" id="lobby-players"></div>
+      <div class="lobby-actions">
+        <div id="host-controls" style="display:none;">
+          <div class="ai-controls">
+            <button class="btn-secondary" id="btn-ai-minus">－ AI</button>
+            <span id="ai-count-label">AI 玩家：0</span>
+            <button class="btn-secondary" id="btn-ai-plus">＋ AI</button>
+          </div>
+          <button class="btn-start" id="btn-lobby-start" disabled>开 始（至少 2 人）</button>
+        </div>
+      </div>
+      <div class="lobby-tip" id="lobby-tip"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 炸弹游戏屏 ========== -->
+<div id="screen-bomb" class="screen">
+  <div class="bomb-page">
+    <div class="game-header">
+      <button class="icon-btn" id="btn-bomb-back">← 退出</button>
+      <div class="game-title" id="bomb-title">词语炸弹</div>
+      <div class="game-desc" id="bomb-room-label"></div>
+    </div>
+
+    <!-- 准备态 -->
+    <div class="bomb-intro" id="bomb-intro">
+      <div class="bomb-rules" id="bomb-intro-rules"></div>
+      <button class="btn-start" id="btn-bomb-start">开 始</button>
+    </div>
+
+    <!-- 游戏态 -->
+    <div class="bomb-play" id="bomb-play" style="display:none;">
+      <div class="seats-bar" id="seats-bar"></div>
+
+      <div class="bomb-cue">
+        <div class="bomb-cue-label" id="bomb-cue-label">首字母</div>
+        <div class="bomb-cue-main" id="bomb-cue-main"></div>
+        <div class="bomb-cue-sub" id="bomb-cue-sub"></div>
+      </div>
+
+      <div class="turn-bar" id="bomb-turn"></div>
+
+      <div class="timer-area">
+        <div class="timer-display" id="bomb-timer-text">--</div>
+        <div class="timer-track">
+          <div class="timer-bar" id="bomb-timer-bar"></div>
+        </div>
+      </div>
+
+      <div class="history-area bomb-history">
+        <div class="history-list" id="bomb-history"></div>
+      </div>
+
+      <div class="input-area" id="bomb-input-area" style="display:none;">
+        <div class="input-hint" id="bomb-input-hint"></div>
+        <div class="input-row">
+          <input type="text" id="bomb-input" placeholder="输入词语 / 诗句..." autocomplete="off" autocapitalize="off" spellcheck="false">
+          <button id="btn-bomb-submit" class="btn-primary">确认</button>
+        </div>
+        <div class="error-msg" id="bomb-error"></div>
+      </div>
+    </div>
+
+    <!-- 结果覆盖层 -->
+    <div class="bomb-over" id="bomb-over" style="display:none;">
+      <div class="boom">💥</div>
+      <div class="bomb-over-title" id="bomb-over-title"></div>
+      <div class="bomb-reveal" id="bomb-reveal"></div>
+      <div class="bomb-poem-detail" id="bomb-poem-detail"></div>
+      <div class="bomb-over-actions" id="bomb-over-actions"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 飞花令/接龙 结果弹窗 ========== -->
 <div id="result-modal" class="modal-overlay">
   <div class="modal-content">
     <div class="result-title" id="result-title"></div>
@@ -143,12 +285,17 @@
   </div>
 </div>
 
-<script src="js/poetry-db.js"></script>
-<script src="js/fly-flower.js"></script>
-<script src="js/chain.js"></script>
-<script src="js/app.js"></script>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="poetry-db.js"></script>
+<script src="fly-flower.js"></script>
+<script src="chain.js"></script>
+<script src="idiom-db.js"></script>
+<script src="idiom-chain.js"></script>
+<script src="word-bank.js"></script>
+<script src="bomb.js"></script>
+<script src="bomb-online.js"></script>
+<script src="app.js"></script>
 <script>
-  // 注册 Service Worker（仅在线环境）
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
     navigator.serviceWorker.register('sw.js').catch(() => {});
   }

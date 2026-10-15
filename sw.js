@@ -1,13 +1,18 @@
 // 诗阵 Service Worker - 离线缓存
-const CACHE_NAME = 'poetry-arena-v1';
+const CACHE_NAME = 'poetry-arena-v5';
 const ASSETS = [
   './',
   './index.html',
-  './css/style.css',
-  './js/poetry-db.js',
-  './js/fly-flower.js',
-  './js/chain.js',
-  './js/app.js',
+  './style.css',
+  './poetry-db.js',
+  './fly-flower.js',
+  './chain.js',
+  './idiom-db.js',
+  './idiom-chain.js',
+  './word-bank.js',
+  './bomb.js',
+  './bomb-online.js',
+  './app.js',
   './manifest.json'
 ];
 
@@ -31,8 +36,8 @@ self.addEventListener('fetch', (e) => {
   e.respondWith(
     caches.match(e.request).then(cached => {
       return cached || fetch(e.request).then(resp => {
-        // 只缓存同源请求
-        if (e.request.url.startsWith(location.origin)) {
+        // 只缓存同源请求（PeerJS CDN 不缓存）
+        if (e.request.method === 'GET' && e.request.url.startsWith(location.origin)) {
           const copy = resp.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(e.request, copy));
         }

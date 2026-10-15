@@ -7,7 +7,7 @@
 class FlyFlowerGame {
   constructor(difficulty = 'medium') {
     this.difficulty = difficulty;
-    this.timeLimit = { easy: 30, medium: 25, hard: 20 }[difficulty];
+    this.timeLimit = { easy: 60, medium: 45, hard: 30 }[difficulty];
     this.usedLines = new Set();
     this.playerScore = 0;
     this.aiScore = 0;
