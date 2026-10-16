@@ -13,6 +13,7 @@ class FlyFlowerGame {
     this.aiScore = 0;
     this.currentTurn = 'player'; // 'player' | 'ai'
     this.targetChar = '';
+    this.hintsLeft = 3;          // 每局 3 次提示机会
     this.gameOver = false;
     this.winner = null;
     this.history = []; // { line, author, dynasty, title, who }
@@ -196,6 +197,22 @@ class FlyFlowerGame {
   playerPass() {
     if (this.gameOver || this.currentTurn !== 'player') return;
     this.endGame('ai', '你选择了放弃');
+  }
+
+  /**
+   * 提示：返回一句符合当前关键字且未用过的诗句（优先名篇）
+   * 不占用该句，玩家仍可自行输入；每局限 3 次
+   */
+  hint() {
+    if (this.gameOver || this.currentTurn !== 'player' || this.hintsLeft <= 0) return null;
+    const available = DB.getLinesByChar(this.targetChar)
+      .filter(item => !this.usedLines.has(item.line));
+    if (available.length === 0) return null;
+    // 提示优先给名篇（难度低），更易被玩家想起
+    const sorted = available.sort((a, b) => a.poem.diff - b.poem.diff);
+    const item = sorted[Math.floor(Math.random() * Math.min(sorted.length, 8))];
+    this.hintsLeft--;
+    return { line: item.line, poem: item.poem };
   }
 
   /**

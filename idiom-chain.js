@@ -13,6 +13,7 @@ class IdiomChainGame {
     this.aiScore = 0;
     this.currentTurn = 'player';
     this.chain = [];
+    this.hintsLeft = 3; // 每局 3 次提示机会
     this.gameOver = false;
     this.winner = null;
     this.timer = null;
@@ -112,6 +113,27 @@ class IdiomChainGame {
   playerPass() {
     if (this.gameOver || this.currentTurn !== 'player') return;
     this.endGame('ai', '你选择了放弃');
+  }
+
+  /**
+   * 提示：返回一个符合当前接龙约束且未用过的成语；每局限 3 次
+   */
+  hint() {
+    if (this.gameOver || this.currentTurn !== 'player' || this.hintsLeft <= 0) return null;
+    let idiom;
+    if (this.lastChar === null) {
+      // 首回合：任意成语
+      IdiomDB.ensureInit();
+      const remain = IdiomDB._all.filter(w => !this.usedIdioms.has(w));
+      if (remain.length === 0) return null;
+      idiom = remain[Math.floor(Math.random() * remain.length)];
+    } else {
+      const avail = IdiomDB.getAvailableForChar(this.lastChar, this.usedIdioms);
+      if (avail.length === 0) return null;
+      idiom = avail[Math.floor(Math.random() * avail.length)];
+    }
+    this.hintsLeft--;
+    return { line: idiom };
   }
 
   endGame(winner, reason) {

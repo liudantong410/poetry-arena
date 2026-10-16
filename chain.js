@@ -12,6 +12,7 @@ class ChainGame {
     this.playerScore = 0;
     this.aiScore = 0;
     this.currentTurn = 'player';
+    this.hintsLeft = 3; // 每局 3 次提示机会
     this.chain = []; // { line, author, dynasty, title, source, who, firstChar, lastChar }
     this.gameOver = false;
     this.winner = null;
@@ -216,6 +217,27 @@ class ChainGame {
   playerPass() {
     if (this.gameOver || this.currentTurn !== 'player') return;
     this.endGame('ai', '你选择了放弃');
+  }
+
+  /**
+   * 提示：返回一句符合当前接龙约束且未用过的诗句（优先名篇）
+   * 不占用该句，玩家仍可自行输入；每局限 3 次
+   */
+  hint() {
+    if (this.gameOver || this.currentTurn !== 'player' || this.hintsLeft <= 0) return null;
+    let available;
+    if (this.lastChar === null) {
+      // 首回合：任意名篇
+      available = DB.getAllLines().filter(item => !this.usedLines.has(item.line));
+    } else {
+      available = DB.getLinesByFirstChar(this.lastChar)
+        .filter(item => !this.usedLines.has(item.line));
+    }
+    if (available.length === 0) return null;
+    const sorted = available.sort((a, b) => a.poem.diff - b.poem.diff);
+    const item = sorted[Math.floor(Math.random() * Math.min(sorted.length, 8))];
+    this.hintsLeft--;
+    return { line: item.line, poem: item.poem };
   }
 
   endGame(winner, reason) {

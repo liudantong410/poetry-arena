@@ -4,23 +4,35 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <meta name="description" content="诗阵 — 面向资深诗词爱好者的纯诗词高难度挑战网页游戏">
-  <meta name="theme-color" content="#1a1a2e">
+  <meta name="theme-color" content="#2b3a42">
   <title>诗阵 · 诗词挑战</title>
-  <link rel="manifest" href="manifest.json">
+  <link rel="manifest" href="manifest.json?v=10">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' fill='%23c41e3a'>诗</text></svg>">
-  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=10">
 </head>
 <body>
 
 <!-- ========== 首页 ========== -->
-<div id="screen-home" class="screen active">
+<div id="screen-home" class="screen bg-home active">
   <div class="home-container">
     <div class="brand">
-      <div class="brand-title">诗 阵</div>
+      <div class="brand-title">诗 阵<span class="brand-seal">詩</span></div>
       <div class="brand-sub">诗词挑战 · AI 对决 · 聚会炸弹</div>
     </div>
 
     <div class="mode-list">
+      <div class="mode-card" data-mode="daily-challenge">
+        <div class="mode-icon">醒</div>
+        <div class="mode-info">
+          <div class="mode-name">每日诗词挑战 <span class="tag-new">新</span></div>
+          <div class="mode-desc">一键唤醒，诗句飞速滚动定格一句，猜题目、作者与出处</div>
+          <div class="mode-meta">随机诗篇 · 全选揭晓全诗 · 可无限再来</div>
+        </div>
+      </div>
+
       <div class="mode-card" data-mode="fly-flower">
         <div class="mode-icon">飞</div>
         <div class="mode-info">
@@ -87,6 +99,11 @@
 
     <div class="stats-bar" id="db-stats">题库加载中...</div>
 
+    <button class="community-entry" id="btn-community">
+      <span class="community-entry-icon">社</span>
+      <span>诗友社区 · 公告与留言板</span>
+    </button>
+
     <div class="home-footer">
       <span>纯诗词 · 零广告 · 零登录 · GitHub Pages</span>
     </div>
@@ -94,7 +111,7 @@
 </div>
 
 <!-- ========== 飞花令 / 接龙 游戏屏 ========== -->
-<div id="screen-duel" class="screen">
+<div id="screen-duel" class="screen bg-duel">
   <div class="game-header">
     <button class="icon-btn btn-duel-back">← 返回</button>
     <div class="game-title" id="game-title"></div>
@@ -137,6 +154,7 @@
       <div class="input-row">
         <input type="text" id="game-input" placeholder="输入诗句..." autocomplete="off" autocapitalize="off" spellcheck="false">
         <button id="btn-submit" class="btn-primary">出句</button>
+        <button id="btn-hint" class="btn-hint">提示 ×3</button>
         <button id="btn-pass" class="btn-secondary">认输</button>
       </div>
       <div class="error-msg" id="error-msg"></div>
@@ -149,7 +167,7 @@
 </div>
 
 <!-- ========== 词语炸弹 菜单屏 ========== -->
-<div id="screen-bomb-menu" class="screen">
+<div id="screen-bomb-menu" class="screen bg-bombmenu">
   <div class="subpage">
     <div class="subpage-header">
       <button class="icon-btn btn-home-back">← 返回</button>
@@ -158,7 +176,7 @@
     <div class="bomb-menu-body">
       <div class="bomb-rules">
         <div class="bomb-rules-title">玩法</div>
-        <p>系统给出拼音首字母（如 <b>BM</b>），所有符合的词里藏着<b>唯一一个炸弹词</b>。大家轮流说词，安全词逐个排除，候选越来越少——<b>谁踩中炸弹词谁输</b>。AI 也不知道炸弹是哪个，人人平等，全拼词汇量与胆识。</p>
+        <p>系统给出拼音首字母（如 <b>BM</b>，即两字词首字声母 <b>B</b>、次字声母 <b>M</b>，例如「保密 bǎo<b>m</b>ì」「报名 bào<b>m</b>íng」「避免 bì<b>m</b>iǎn」「部门 bù<b>m</b>én」），所有符合的词里藏着<b>唯一一个炸弹词</b>。大家轮流说词，安全词逐个排除，候选越来越少——<b>谁踩中炸弹词谁输</b>。AI 也不知道炸弹是哪个，人人平等，全拼词汇量与胆识。</p>
       </div>
 
       <div class="bomb-menu-list">
@@ -181,7 +199,7 @@
 </div>
 
 <!-- ========== 联机大厅屏 ========== -->
-<div id="screen-lobby" class="screen">
+<div id="screen-lobby" class="screen bg-lobby">
   <div class="subpage">
     <div class="subpage-header">
       <button class="icon-btn" id="btn-lobby-back">← 返回</button>
@@ -213,7 +231,7 @@
 </div>
 
 <!-- ========== 炸弹游戏屏 ========== -->
-<div id="screen-bomb" class="screen">
+<div id="screen-bomb" class="screen bg-bomb">
   <div class="bomb-page">
     <div class="game-header">
       <button class="icon-btn" id="btn-bomb-back">← 退出</button>
@@ -255,6 +273,7 @@
         <div class="input-row">
           <input type="text" id="bomb-input" placeholder="输入词语 / 诗句..." autocomplete="off" autocapitalize="off" spellcheck="false">
           <button id="btn-bomb-submit" class="btn-primary">确认</button>
+          <button id="btn-bomb-hint" class="btn-hint">提示 ×3</button>
         </div>
         <div class="error-msg" id="bomb-error"></div>
       </div>
@@ -267,6 +286,93 @@
       <div class="bomb-reveal" id="bomb-reveal"></div>
       <div class="bomb-poem-detail" id="bomb-poem-detail"></div>
       <div class="bomb-over-actions" id="bomb-over-actions"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 每日诗词挑战屏 ========== -->
+<div id="screen-daily" class="screen bg-daily">
+  <div class="subpage">
+    <div class="subpage-header">
+      <button class="icon-btn btn-daily-back">← 返回</button>
+      <div class="game-title">每日诗词挑战</div>
+    </div>
+    <div class="daily-body">
+      <!-- 空闲态 -->
+      <div class="daily-intro" id="daily-intro">
+        <div class="daily-intro-title">诗 句 唤 醒</div>
+        <p class="daily-intro-desc">点击「一键唤醒」，诗句将飞速滚动，随机定格一句诗。然后你需要依次猜出它的<b>题目</b>、<b>作者</b>和<b>出处</b>。全部选定后揭晓全诗，还可随机换一首继续挑战！</p>
+        <button class="btn-start" id="btn-daily-start">一 键 唤 醒</button>
+      </div>
+
+      <!-- 滚动态 -->
+      <div class="daily-scroll" id="daily-scroll" style="display:none;">
+        <div class="daily-scroll-label">诗句滚动中…</div>
+        <div class="daily-scroll-line" id="daily-scroll-line"></div>
+      </div>
+
+      <!-- 答题态 -->
+      <div class="daily-quiz" id="daily-quiz" style="display:none;">
+        <div class="daily-target-line" id="daily-target-line"></div>
+        <div class="daily-quiz-section">
+          <div class="daily-quiz-label">题目</div>
+          <div class="daily-options" id="daily-opts-title"></div>
+        </div>
+        <div class="daily-quiz-section">
+          <div class="daily-quiz-label">作者</div>
+          <div class="daily-options" id="daily-opts-author"></div>
+        </div>
+        <div class="daily-quiz-section">
+          <div class="daily-quiz-label">出处</div>
+          <div class="daily-options" id="daily-opts-source"></div>
+        </div>
+      </div>
+
+      <!-- 揭晓态 -->
+      <div class="daily-reveal" id="daily-reveal" style="display:none;">
+        <div class="daily-score" id="daily-score"></div>
+        <div class="daily-poem-title" id="daily-poem-title"></div>
+        <div class="daily-poem-meta" id="daily-poem-meta"></div>
+        <div class="daily-poem-lines" id="daily-poem-lines"></div>
+        <div class="daily-reveal-actions">
+          <button class="btn-primary" id="btn-daily-again">随 机 再 来</button>
+          <button class="btn-secondary" id="btn-daily-home">返回菜单</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 社区屏 ========== -->
+<div id="screen-community" class="screen bg-community">
+  <div class="subpage">
+    <div class="subpage-header">
+      <button class="icon-btn btn-community-back">← 返回</button>
+      <div class="game-title">诗友社区</div>
+    </div>
+    <div class="community-body">
+      <div class="community-notice">
+        <div class="community-notice-title">公告</div>
+        <p>「诗阵」是面向资深诗词爱好者的纯前端挑战网页：飞花令、接龙、成语接龙与 AI 智能对决，炸弹玩法适合聚会联机，每日诗词挑战随机唤醒一句诗。全部诗词与成语均整理自古典文学选本，欢迎推荐补充。</p>
+        <p>本站零广告、零登录、数据仅保存在你的浏览器本地。祝各位诗友玩得尽兴，与 AI 交锋中多得几分诗意。</p>
+      </div>
+
+      <div class="community-author">
+        <div class="community-notice-title">制作者</div>
+        <div class="author-line">制作 · 维护：诗阵工作室</div>
+        <div class="author-line">联系邮箱：<a href="mailto:buaaerldt@buaa.edu.cn">buaaerldt@buaa.edu.cn</a></div>
+        <div class="author-line author-tip">收录建议 · 词句纠错 · 玩法反馈，欢迎来信</div>
+      </div>
+
+      <div class="community-board">
+        <div class="community-notice-title">留言板</div>
+        <div class="community-post">
+          <input type="text" id="community-name" class="mini-input" placeholder="你的名号" maxlength="10">
+          <textarea id="community-text" class="community-textarea" placeholder="题一句诗，或留下建议…" maxlength="200"></textarea>
+          <button class="btn-primary" id="btn-community-post">落 笔</button>
+        </div>
+        <div class="community-messages" id="community-messages"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -286,15 +392,16 @@
 </div>
 
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-<script src="poetry-db.js"></script>
-<script src="fly-flower.js"></script>
-<script src="chain.js"></script>
-<script src="idiom-db.js"></script>
-<script src="idiom-chain.js"></script>
-<script src="word-bank.js"></script>
-<script src="bomb.js"></script>
-<script src="bomb-online.js"></script>
-<script src="app.js"></script>
+<script src="poetry-db.js?v=10"></script>
+<script src="fly-flower.js?v=10"></script>
+<script src="chain.js?v=10"></script>
+<script src="idiom-db.js?v=10"></script>
+<script src="idiom-chain.js?v=10"></script>
+<script src="word-bank.js?v=10"></script>
+<script src="bomb.js?v=10"></script>
+<script src="bomb-online.js?v=10"></script>
+<script src="daily-challenge.js?v=10"></script>
+<script src="app.js?v=10"></script>
 <script>
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
     navigator.serviceWorker.register('sw.js').catch(() => {});

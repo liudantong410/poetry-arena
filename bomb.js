@@ -25,6 +25,7 @@ class BombGame {
     this.usedSet = new Set();
     this.history = [];          // {seatId,name,text,result:'safe'|'bomb'|'unknown'}
     this.current = 0;           // 当前座位下标
+    this.hintsLeft = 3;         // 单机模式每局 3 次提示机会（联机不启用）
     this.gameOver = false;
     this.loserId = null;
     this.timeLeft = this.timeLimit;
@@ -150,6 +151,25 @@ class BombGame {
   /** 主机收到客人提交 */
   injectSubmit(seatId, text) {
     return this.resolve(seatId, text);
+  }
+
+  /**
+   * 提示（仅单机）：抽一个剩余候选中确认安全的词/句，填给玩家参考
+   * 每局限 3 次；联机时 guests 不知道炸弹，不启用
+   */
+  hint() {
+    if (this.gameOver || this.hintsLeft <= 0) return null;
+    let pick = null;
+    if (this.kind === 'word') {
+      const remain = this.round.words.filter(w => !this.usedSet.has(w) && w !== this.round.bomb);
+      if (remain.length > 0) pick = remain[Math.floor(Math.random() * remain.length)];
+    } else {
+      const remain = this.round.candidates.filter(c => !this.usedSet.has(c.line) && c.line !== this.round.bombLine);
+      if (remain.length > 0) pick = remain[Math.floor(Math.random() * remain.length)].line;
+    }
+    if (!pick) return null;
+    this.hintsLeft--;
+    return pick;
   }
 
   // ===== AI 行动（AI 同样可能踩雷，公平） =====

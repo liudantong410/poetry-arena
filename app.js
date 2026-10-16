@@ -21,10 +21,36 @@ const App = {
   bombErrorTimer: null,
   lastBombState: null,
 
+  // ====== 实景背景图配置 ======
+  // 将自己拍摄的中国山水实景照片放入 bg/ 文件夹，
+  // 然后在下面数组中添加文件名（如 'bg/zhangjiajie.jpg'）。
+  // 每天随机选一张作为全站背景（各屏统一）。
+  // 留空数组则使用内置 SVG 水墨山水背景。
+  SCENERY_BG: [],
+
   init() {
     this.show('screen-home');
     this.bindEvents();
     this.updateStats();
+    this.trySceneryBg();
+  },
+
+  /** 尝试加载实景照片作为背景；失败则保持 SVG */
+  trySceneryBg() {
+    if (!this.SCENERY_BG.length) return;
+    const seed = new Date().getDate() + new Date().getMonth() * 31;
+    const path = this.SCENERY_BG[seed % this.SCENERY_BG.length];
+    const img = new Image();
+    img.onload = () => {
+      document.body.style.backgroundImage = `url("${path}")`;
+      document.body.style.backgroundSize = 'cover';
+      document.body.style.backgroundPosition = 'center';
+      document.body.style.backgroundAttachment = 'fixed';
+      // 让半透明卡片更通透以展示背景
+      document.documentElement.classList.add('has-scenery');
+    };
+    img.onerror = () => { /* 图片不存在，保持 SVG 背景 */ };
+    img.src = path;
   },
 
   // ============ 屏幕切换 ============
@@ -43,6 +69,7 @@ const App = {
         if (mode === 'fly-flower' || mode === 'chain' || mode === 'idiom-chain') this.openDuel(mode);
         else if (mode === 'bomb-poem') this.openBombSolo('poem');
         else if (mode === 'bomb-word-menu') this.show('screen-bomb-menu');
+        else if (mode === 'daily-challenge') this.openDaily();
       });
     });
 
@@ -98,6 +125,24 @@ const App = {
     document.getElementById('bomb-input').addEventListener('keydown', e => {
       if (e.key === 'Enter') this.bombSubmit();
     });
+
+    // 每日诗词挑战
+    document.querySelector('.btn-daily-back').addEventListener('click', () => {
+      if (this.dailyGame) this.dailyGame.reset();
+      this.show('screen-home');
+    });
+    document.getElementById('btn-daily-start').addEventListener('click', () => this.startDaily());
+    document.getElementById('btn-daily-again').addEventListener('click', () => this.startDaily(true));
+    document.getElementById('btn-daily-home').addEventListener('click', () => this.show('screen-home'));
+
+    // 对阵玩法提示（每局 3 次）
+    document.getElementById('btn-hint').addEventListener('click', () => this.duelHint());
+    document.getElementById('btn-bomb-hint').addEventListener('click', () => this.bombHint());
+
+    // 社区
+    document.getElementById('btn-community').addEventListener('click', () => this.openCommunity());
+    document.querySelector('.btn-community-back').addEventListener('click', () => this.show('screen-home'));
+    document.getElementById('btn-community-post').addEventListener('click', () => this.postCommunity());
   },
 
   updateStats() {
@@ -113,6 +158,12 @@ const App = {
   openDuel(mode) {
     this.duelMode = mode;
     this.cleanupDuel();
+    // 不同挑战窗口切换不同山水背景
+    const duel = document.getElementById('screen-duel');
+    duel.classList.remove('bg-duel', 'bg-duel-fly', 'bg-duel-chain', 'bg-duel-idiom');
+    duel.classList.add(
+      mode === 'fly-flower' ? 'bg-duel-fly' :
+      mode === 'idiom-chain' ? 'bg-duel-idiom' : 'bg-duel-chain');
     this.show('screen-duel');
     const title = document.getElementById('game-title');
     const desc = document.getElementById('game-desc');
@@ -140,6 +191,9 @@ const App = {
     document.getElementById('score-ai').textContent = '0';
     document.getElementById('history-list').innerHTML = '';
     document.getElementById('game-input').value = '';
+    const hintBtn = document.getElementById('btn-hint');
+    hintBtn.textContent = '提示 ×3';
+    hintBtn.disabled = false;
 
     if (this.duelMode === 'fly-flower') {
       this.game = new FlyFlowerGame(this.currentDifficulty);
@@ -263,9 +317,35 @@ const App = {
   showDuelError(msg) {
     const el = document.getElementById('error-msg');
     el.textContent = msg;
+    el.classList.remove('is-hint');
     el.classList.add('show');
     clearTimeout(this.errorTimer);
     this.errorTimer = setTimeout(() => el.classList.remove('show'), 2500);
+  },
+
+  // 提示：从词库给出符合当前约束的句子并填入输入框，每局限 3 次
+  duelHint() {
+    if (!this.game || this.game.gameOver) return;
+    const btn = document.getElementById('btn-hint');
+    const h = this.game.hint();
+    btn.textContent = this.game.hintsLeft > 0 ? `提示 ×${this.game.hintsLeft}` : '提示用尽';
+    if (this.game.hintsLeft <= 0) btn.disabled = true;
+    if (!h) {
+      this.showDuelError('当前没有可提示的句子了');
+      return;
+    }
+    this.showDuelHint(this.duelMode === 'idiom-chain'
+      ? `提示：可以接「${h.line}」`
+      : `提示：「${h.line}」——${h.poem.d}·${h.poem.a}《${h.poem.t}》`);
+    document.getElementById('game-input').value = h.line;
+  },
+
+  showDuelHint(msg) {
+    const el = document.getElementById('error-msg');
+    el.innerHTML = `<span class="hint-glyph">筆</span>${msg}`;
+    el.classList.add('show', 'is-hint');
+    clearTimeout(this.errorTimer);
+    this.errorTimer = setTimeout(() => el.classList.remove('show', 'is-hint'), 6000);
   },
 
   showDuelResult(winner, reason, result) {
@@ -351,7 +431,7 @@ const App = {
     if (kind === 'word') {
       rules.innerHTML = `
         <div class="bomb-rules-title">玩法</div>
-        <p>系统给出拼音首字母（如 <b>BM</b>），所有符合的词中藏着<b>唯一一个炸弹词</b>。你和 3 名 AI 围坐轮流说词，安全词被逐个排除——<b>踩中炸弹词者输</b>。AI 同样不知道炸弹是哪个。</p>`;
+        <p>系统给出拼音首字母（如 <b>BM</b>，即首字声母 <b>B</b> + 次字声母 <b>M</b>，如「保密 bǎomì」「报名 bàomíng」「避免 bìmiǎn」），所有符合的词中藏着<b>唯一一个炸弹词</b>。你和 3 名 AI 围坐轮流说词，安全词被逐个排除——<b>踩中炸弹词者输</b>。AI 同样不知道炸弹是哪个。</p>`;
     } else {
       rules.innerHTML = `
         <div class="bomb-rules-title">玩法</div>
@@ -376,6 +456,10 @@ const App = {
     document.getElementById('bomb-over').style.display = 'none';
     document.getElementById('bomb-play').style.display = 'flex';
     document.getElementById('bomb-history').innerHTML = '';
+    const bh = document.getElementById('btn-bomb-hint');
+    bh.textContent = '提示 ×3';
+    bh.disabled = false;
+    bh.style.display = '';
     this.bombGame.start();
   },
 
@@ -415,9 +499,37 @@ const App = {
   showBombError(msg) {
     const el = document.getElementById('bomb-error');
     el.textContent = msg;
+    el.classList.remove('is-hint');
     el.classList.add('show');
     clearTimeout(this.bombErrorTimer);
     this.bombErrorTimer = setTimeout(() => el.classList.remove('show'), 2500);
+  },
+
+  // 炸弹提示（仅单机）：给出一个确认安全的候选，每局限 3 次
+  bombHint() {
+    if (this.netMode) return; // 联机时无从得知炸弹，不启用
+    const g = this.bombGame;
+    if (!g || g.gameOver) return;
+    const btn = document.getElementById('btn-bomb-hint');
+    const h = g.hint();
+    btn.textContent = g.hintsLeft > 0 ? `提示 ×${g.hintsLeft}` : '提示用尽';
+    if (g.hintsLeft <= 0) btn.disabled = true;
+    if (!h) {
+      this.showBombError('当前没有可提示的了');
+      return;
+    }
+    this.showBombHint(g.kind === 'word'
+      ? `提示：「${h}」是安全词`
+      : `提示：「${h}」不是炸弹句`);
+    document.getElementById('bomb-input').value = h;
+  },
+
+  showBombHint(msg) {
+    const el = document.getElementById('bomb-error');
+    el.innerHTML = `<span class="hint-glyph">筆</span>${msg}`;
+    el.classList.add('show', 'is-hint');
+    clearTimeout(this.bombErrorTimer);
+    this.bombErrorTimer = setTimeout(() => el.classList.remove('show', 'is-hint'), 6000);
   },
 
   // ============ 炸弹状态渲染（单机/联机通用） ============
@@ -689,6 +801,7 @@ const App = {
     document.getElementById('bomb-over').style.display = 'none';
     document.getElementById('bomb-play').style.display = 'flex';
     document.getElementById('bomb-history').innerHTML = '';
+    document.getElementById('btn-bomb-hint').style.display = 'none'; // 联机无提示
   },
 
   copyRoomCode() {
@@ -728,6 +841,155 @@ const App = {
       this.show('screen-home');
     }
     this.netMode = null;
+  },
+
+  // ================================================================
+  // 每日诗词挑战
+  // ================================================================
+  dailyGame: null,
+
+  openDaily() {
+    this.show('screen-daily');
+    document.getElementById('daily-intro').style.display = 'block';
+    document.getElementById('daily-scroll').style.display = 'none';
+    document.getElementById('daily-quiz').style.display = 'none';
+    document.getElementById('daily-reveal').style.display = 'none';
+  },
+
+  startDaily(randomMode = false) {
+    document.getElementById('daily-intro').style.display = 'none';
+    document.getElementById('daily-scroll').style.display = 'block';
+    document.getElementById('daily-quiz').style.display = 'none';
+    document.getElementById('daily-reveal').style.display = 'none';
+
+    this.dailyGame = new DailyChallenge();
+    this.dailyGame.onPhaseChange = s => this.renderDaily(s);
+    this.dailyGame.onReveal = r => this.renderDailyReveal(r);
+    this.dailyGame.start(randomMode);
+  },
+
+  renderDaily(s) {
+    if (s.phase === 'scrolling') {
+      const el = document.getElementById('daily-scroll-line');
+      el.textContent = s.displayLine || '';
+    } else if (s.phase === 'quiz') {
+      document.getElementById('daily-scroll').style.display = 'none';
+      document.getElementById('daily-quiz').style.display = 'block';
+      document.getElementById('daily-target-line').textContent = s.targetLine;
+      if (!s.options || !s.answers) {
+        console.error('[Daily] quiz 状态缺失字段:', { hasOptions: !!s.options, hasAnswers: !!s.answers, phase: s.phase, keys: Object.keys(s) });
+        return;
+      }
+      this.renderDailyOptions('title', s.options.title || [], s.answers.title);
+      this.renderDailyOptions('author', s.options.author || [], s.answers.author);
+      this.renderDailyOptions('source', s.options.source || [], s.answers.source);
+    }
+  },
+
+  renderDailyOptions(field, options, selected) {
+    const container = document.getElementById(`daily-opts-${field}`);
+    container.innerHTML = '';
+    options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'daily-option';
+      if (selected === opt) btn.classList.add('selected');
+      btn.textContent = opt;
+      btn.addEventListener('click', () => {
+        if (this.dailyGame) this.dailyGame.select(field, opt);
+      });
+      container.appendChild(btn);
+    });
+  },
+
+  renderDailyReveal(r) {
+    document.getElementById('daily-quiz').style.display = 'none';
+    document.getElementById('daily-reveal').style.display = 'block';
+
+    const scoreText = ['题目', '作者', '出处'];
+    const marks = [r.correct.title, r.correct.author, r.correct.source];
+    const html = marks.map((ok, i) =>
+      `<span class="daily-mark ${ok ? 'ok' : 'wrong'}">${ok ? '✓' : '✗'} ${scoreText[i]}</span>`
+    ).join(' ');
+    document.getElementById('daily-score').innerHTML = `答对 ${r.score}/3 · ${html}`;
+    document.getElementById('daily-poem-title').textContent = r.poem.t;
+    document.getElementById('daily-poem-meta').textContent = `${r.poem.a}（${r.poem.d}）· ${r.poem.type} · ${r.poem.s}`;
+    document.getElementById('daily-poem-lines').innerHTML =
+      r.poem.lines.map(l => `<div class="daily-line">${l}</div>`).join('');
+  },
+
+  // ================================================================
+  // 社区（本地留言板 + 公告）
+  // ================================================================
+  COMMUNITY_KEY: 'poetry-arena-community',
+
+  openCommunity() {
+    this.show('screen-community');
+    this.renderCommunity();
+  },
+
+  loadCommunity() {
+    try {
+      return JSON.parse(localStorage.getItem(this.COMMUNITY_KEY)) || [];
+    } catch (e) {
+      return [];
+    }
+  },
+
+  saveCommunity(list) {
+    try {
+      localStorage.setItem(this.COMMUNITY_KEY, JSON.stringify(list));
+    } catch (e) { /* 存储不可用时静默降级 */ }
+  },
+
+  postCommunity() {
+    const nameEl = document.getElementById('community-name');
+    const textEl = document.getElementById('community-text');
+    const text = (textEl.value || '').trim();
+    if (!text) { this.shake('community-text'); return; }
+    const name = (nameEl.value || '').trim() || '无名诗友';
+    const list = this.loadCommunity();
+    list.unshift({ name, text, time: Date.now() });
+    this.saveCommunity(list.slice(0, 100));
+    textEl.value = '';
+    this.renderCommunity();
+  },
+
+  renderCommunity() {
+    const box = document.getElementById('community-messages');
+    if (!box) return;
+    const list = this.loadCommunity();
+    if (list.length === 0) {
+      box.innerHTML = '<div class="community-empty">砚台已备好，来做第一位题诗的人吧</div>';
+      return;
+    }
+    box.innerHTML = '';
+    list.forEach((m, i) => {
+      const el = document.createElement('div');
+      el.className = 'community-message';
+      const d = new Date(m.time);
+      const ts = `${d.getMonth() + 1}月${d.getDate()}日 ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+      el.innerHTML = `
+        <div class="community-msg-head">
+          <span class="community-msg-name">${this.escapeHtml(m.name)}</span>
+          <span class="community-msg-time">${ts}</span>
+          <button class="community-msg-del" data-idx="${i}" title="删除">✕</button>
+        </div>
+        <div class="community-msg-text">${this.escapeHtml(m.text)}</div>`;
+      box.appendChild(el);
+    });
+    box.querySelectorAll('.community-msg-del').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const cur = this.loadCommunity();
+        cur.splice(parseInt(btn.dataset.idx, 10), 1);
+        this.saveCommunity(cur);
+        this.renderCommunity();
+      });
+    });
+  },
+
+  escapeHtml(s) {
+    return (s || '').replace(/[&<>"']/g, c =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   }
 };
 

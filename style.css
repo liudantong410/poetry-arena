@@ -11,12 +11,19 @@
   --seal-dark: #8b1528;
   --gold: #b8860b;
   --jade: #4a7c59;
+  --enamel: #1e5a8a;        /* 珐琅蓝 */
+  --enamel-light: #5d87ad;
+  --dai: #2b3a42;           /* 远黛黑 */
+  --dai-light: #46565e;
+  --moss: #6b7f6a;          /* 苔绿 */
   --shadow: rgba(26,26,46,0.1);
   --shadow-md: rgba(26,26,46,0.2);
   --radius: 8px;
   --radius-lg: 16px;
   --font-serif: "Noto Serif SC","Source Han Serif SC","Songti SC","SimSun","STSong","Microsoft YaHei",serif;
+  --font-brush: "Ma Shan Zheng","STXingkai","华文行楷","STKaiti","华文楷体","KaiTi","楷体","Songti SC","STSong","SimSun","Microsoft YaHei",serif;
   --font-sans: "Noto Sans SC","Source Han Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  --accent: var(--enamel);
   --transition: 0.3s ease;
 }
 
@@ -67,13 +74,48 @@ body {
 }
 
 .brand-title {
-  font-family: var(--font-serif);
-  font-size: 72px;
-  font-weight: 900;
+  font-family: var(--font-brush);
+  font-size: clamp(56px, 14vw, 84px);
+  font-weight: 700;
   letter-spacing: 24px;
-  color: var(--ink);
   text-indent: 24px; /* 补偿 letter-spacing */
+  /* 远黛黑 → 珐琅蓝 的墨色渐变，模拟浓淡笔触 */
+  background: linear-gradient(180deg, #46565e 0%, #2b3a42 45%, #1e5a8a 115%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: var(--dai);
+  filter: drop-shadow(0 3px 10px rgba(30,90,138,0.28)) drop-shadow(0 1px 2px rgba(43,58,66,0.22));
   position: relative;
+}
+
+/* 印章点缀 */
+.brand-seal {
+  position: absolute;
+  right: -18px;
+  bottom: 14px;
+  width: 46px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--seal);
+  color: #f5f0e8;
+  -webkit-text-fill-color: #f5f0e8;
+  font-size: 25px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-indent: 0;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(196,30,58,0.35), inset 0 0 0 2px rgba(245,240,232,0.4);
+  transform: rotate(8deg);
+  animation: seal-press 0.6s ease 0.3s both;
+}
+
+@keyframes seal-press {
+  0% { transform: rotate(8deg) scale(1.6); opacity: 0; }
+  70% { transform: rotate(8deg) scale(0.95); opacity: 1; }
+  100% { transform: rotate(8deg) scale(1); opacity: 1; }
 }
 
 .brand-title::after {
@@ -144,8 +186,8 @@ body {
   background: var(--ink);
   color: var(--paper);
   border-radius: 50%;
-  font-family: var(--font-serif);
-  font-size: 28px;
+  font-family: var(--font-brush);
+  font-size: 30px;
   font-weight: 700;
   flex-shrink: 0;
 }
@@ -1155,4 +1197,468 @@ body {
   .join-row .mini-input { flex: 1 1 100%; max-width: none; }
   .bomb-play { padding: 12px 14px 16px; }
   .seat { padding: 6px 10px; font-size: 14px; }
+}
+
+/* ========== 每日诗词挑战 ========== */
+.daily-body {
+  padding: 16px;
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+}
+.daily-intro-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 40px 0 16px;
+}
+.daily-intro-desc {
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--ink-soft);
+  margin-bottom: 32px;
+}
+.daily-scroll {
+  padding: 60px 20px;
+  text-align: center;
+}
+.daily-scroll-label {
+  font-size: 14px;
+  color: var(--ink-soft);
+  margin-bottom: 20px;
+}
+.daily-scroll-line {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--accent);
+  min-height: 48px;
+  line-height: 1.4;
+  transition: opacity 0.05s;
+}
+.daily-target-line {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--accent);
+  padding: 24px 16px;
+  border: 2px solid var(--paper-dark);
+  border-radius: 12px;
+  margin-bottom: 28px;
+  background: var(--paper);
+}
+.daily-quiz-section {
+  margin-bottom: 24px;
+  text-align: left;
+}
+.daily-quiz-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  margin-bottom: 8px;
+  text-align: center;
+}
+.daily-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.daily-option {
+  padding: 14px 10px;
+  border: 2px solid var(--paper-dark);
+  border-radius: 10px;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  font-family: var(--font-serif);
+}
+.daily-option:hover {
+  border-color: var(--enamel);
+  background: rgba(30,90,138,0.08);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(30,90,138,0.15);
+}
+.daily-option.selected {
+  border-color: var(--enamel);
+  background: linear-gradient(135deg, var(--dai) 0%, var(--enamel) 100%);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(30,90,138,0.35);
+  transform: scale(1.02);
+}
+.daily-score {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+.daily-mark {
+  display: inline-block;
+  margin: 0 6px;
+  font-size: 14px;
+}
+.daily-mark.ok { color: #2e7d32; }
+.daily-mark.wrong { color: #c62828; }
+.daily-poem-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+.daily-poem-meta {
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin-bottom: 20px;
+}
+.daily-poem-lines {
+  border: 1px solid var(--paper-dark);
+  border-radius: 8px;
+  padding: 20px;
+  background: var(--paper);
+  margin-bottom: 24px;
+}
+.daily-line {
+  font-size: 18px;
+  line-height: 2.2;
+  color: var(--ink);
+}
+.daily-reveal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+/* ================================================================
+   v8 · 水墨山水背景系统（各挑战窗口不同背景）
+   全部为内嵌 SVG，无外部图片依赖
+   ================================================================ */
+
+.screen {
+  background-size: cover;
+  background-position: center bottom;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+/* 首页 · 远山层峦淡月松风 */
+.bg-home {
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 900' preserveAspectRatio='xMidYMax slice'><defs><linearGradient id='sky' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23dfe5e3'/><stop offset='.5' stop-color='%23eeeae0'/><stop offset='1' stop-color='%23f5f0e8'/></linearGradient><radialGradient id='glow' cx='50%25' cy='50%25' r='50%25'><stop offset='0' stop-color='%23f7f5ed' stop-opacity='.9'/><stop offset='.7' stop-color='%23f7f5ed' stop-opacity='.25'/><stop offset='1' stop-color='%23f7f5ed' stop-opacity='0'/></radialGradient></defs><rect width='1440' height='900' fill='url(%23sky)'/><circle cx='1160' cy='195' r='100' fill='url(%23glow)'/><circle cx='1160' cy='195' r='38' fill='%23f7f5ed' opacity='.75'/><rect y='320' width='1440' height='70' fill='%23f5f0e8' opacity='.22'/><path d='M0 470Q200 390 400 440T820 420T1220 450T1440 430V560H0Z' fill='%232b3a42' opacity='.05'/><path d='M0 530Q220 450 460 490T920 480T1440 510V630H0Z' fill='%232b3a42' opacity='.1'/><rect y='570' width='1440' height='55' fill='%23f5f0e8' opacity='.3'/><path d='M0 610Q260 520 520 590T1060 570T1440 600V720H0Z' fill='%232b3a42' opacity='.18'/><path d='M560 580v55M566 584v48' stroke='%237fa8c9' stroke-width='2.5' opacity='.28' stroke-linecap='round'/><path d='M0 700Q300 600 620 680T1240 660T1440 690V810H0Z' fill='%232b3a42' opacity='.33'/><path d='M0 800Q360 720 740 780T1440 760V900H0Z' fill='%232b3a42' opacity='.52'/><g stroke='%232b3a42' stroke-width='3' fill='none' opacity='.5' stroke-linecap='round'><path d='M1285 810V680'/><path d='M1275 730q-22-16-44-13'/><path d='M1275 765q22-18 44-14'/><path d='M1275 695q-20-16-40-13'/><path d='M1320 810V715'/><path d='M1310 745q-18-16-36-13'/><path d='M1310 775q18-16 36-13'/></g><g stroke='%232b3a42' stroke-width='3' fill='none' opacity='.35' stroke-linecap='round'><path d='M420 210q12-13 24 0M452 210q12-13 24 0M484 210q12-13 24 0'/><path d='M560 265q10-11 20 0M586 265q10-11 20 0'/><path d='M340 310q8-9 16 0M362 310q8-9 16 0'/></g><rect y='820' width='1440' height='80' fill='%239db8c6' opacity='.07'/></svg>");
+}
+
+/* 飞花令 · 珐琅蓝江月孤帆 */
+.bg-duel-fly {
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 900' preserveAspectRatio='xMidYMax slice'><defs><linearGradient id='b' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23dde7ee'/><stop offset='.65' stop-color='%23eef0ea'/><stop offset='1' stop-color='%23f5f0e8'/></linearGradient></defs><rect width='1440' height='900' fill='url(%23b)'/><circle cx='1090' cy='210' r='58' fill='%23f7f3ea' opacity='.95'/><circle cx='1090' cy='210' r='72' fill='none' stroke='%23b8860b' stroke-width='2' opacity='.25'/><g fill='%231e5a8a'><path d='M0 560Q200 460 420 520T880 500T1440 540V900H0Z' opacity='.18'/></g><g fill='%232b3a42'><path d='M0 660Q260 540 520 630T1040 610T1440 650V900H0Z' opacity='.32'/><path d='M0 780Q320 670 660 750T1260 720T1440 750V900H0Z' opacity='.6'/></g><rect y='740' width='1440' height='160' fill='%237fa8c9' opacity='.14'/><g stroke='%231e5a8a' stroke-width='3' fill='none' opacity='.35' stroke-linecap='round'><path d='M200 800q40 14 80 0'/><path d='M420 840q40 14 80 0'/><path d='M1150 825q40 14 80 0'/></g><g opacity='.75'><path d='M960 735v-95l62 95Z' fill='%232b3a42'/><path d='M935 740h130l-18 24h-96Z' fill='%231e5a8a'/></g></svg>");
+}
+
+/* 接龙 · 远黛层峦溪涧 */
+.bg-duel-chain {
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 900' preserveAspectRatio='xMidYMax slice'><defs><linearGradient id='c' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23e9ebe6'/><stop offset='.6' stop-color='%23f2efe6'/><stop offset='1' stop-color='%23f5f0e8'/></linearGradient></defs><rect width='1440' height='900' fill='url(%23c)'/><path d='M0 600L190 470L360 580L540 450L730 590L920 480L1120 600L1300 520L1440 590V900H0Z' fill='%232b3a42' opacity='.16'/><path d='M0 700L240 590L430 690L640 560L860 690L1080 600L1290 700L1440 640V900H0Z' fill='%232b3a42' opacity='.32'/><path d='M0 900V800L320 720L620 810L900 730L1180 820L1440 760V900Z' fill='%232b3a42' opacity='.55'/><path d='M640 900L700 700L730 620L770 620L760 700L800 900Z' fill='%237fa8c9' opacity='.18'/></svg>");
+}
+
+/* 成语接龙 · 苔绿丘壑翠竹 */
+.bg-duel-idiom {
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 900' preserveAspectRatio='xMidYMax slice'><defs><linearGradient id='d' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23edefe2'/><stop offset='.6' stop-color='%23f3f1e6'/><stop offset='1' stop-color='%23f5f0e8'/></linearGradient></defs><rect width='1440' height='900' fill='url(%23d)'/><g fill='%236b7f6a'><path d='M0 640Q240 540 480 620T960 600T1440 640V900H0Z' opacity='.2'/><path d='M0 760Q360 650 720 720T1440 700V900H0Z' opacity='.32'/></g><path d='M0 840Q400 760 800 810T1440 790V900H0Z' fill='%234a5d4a' opacity='.5'/><g stroke='%234a5d4a' fill='none' stroke-linecap='round' opacity='.42'><path d='M1290 900V560' stroke-width='8'/><path d='M1322 900V620' stroke-width='6'/><path d='M1265 645q-60-30-112-22' stroke-width='4'/><path d='M1268 705q60-36 110-30' stroke-width='4'/><path d='M1293 600q-50-40-98-46' stroke-width='4'/><path d='M1322 660q46-40 92-46' stroke-width='4'/></g></svg>");
+}
+
+/* 炸弹菜单/大厅 · 炭墨远山 */
+.bg-bombmenu, .bg-lobby {
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 900' preserveAspectRatio='xMidYMax slice'><defs><linearGradient id='e' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23e6e4dd'/><stop offset='.6' stop-color='%23efece4'/><stop offset='1' stop-color='%23f5f0e8'/></linearGradient></defs><rect width='1440' height='900' fill='url(%23e)'/><g fill='%233a4448'><path d='M0 600Q200 500 400 570T820 550T1200 600T1440 570V900H0Z' opacity='.22'/><path d='M0 720Q280 620 560 700T1100 680T1440 720V900H0Z' opacity='.4'/></g><path d='M0 830Q360 740 720 800T1440 780V900H0Z' fill='%232b3a42' opacity='.6'/><circle cx='300' cy='240' r='110' fill='%232b3a42' opacity='.06'/></svg>");
+}
+
+/* 炸弹对局 · 暮色惊雷 */
+.bg-bomb {
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 900' preserveAspectRatio='xMidYMax slice'><defs><linearGradient id='f' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23dcd6cb'/><stop offset='.55' stop-color='%23ece7dc'/><stop offset='1' stop-color='%23f5f0e8'/></linearGradient></defs><rect width='1440' height='900' fill='url(%23f)'/><g fill='%232b3a42'><path d='M0 150Q180 80 360 130T720 105T1080 140T1440 95V0H0Z' opacity='.32'/><path d='M0 260Q240 200 480 240T960 220T1440 250V80H0Z' opacity='.12'/></g><path d='M985 135l-40 92h32l-46 116 80-134h-32l32-74Z' fill='%23b8860b' opacity='.5'/><g fill='%232b3a42'><path d='M0 640Q200 540 420 610T860 590T1240 640T1440 610V900H0Z' opacity='.2'/><path d='M0 760Q320 660 660 730T1260 700T1440 730V900H0Z' opacity='.45'/><path d='M0 850Q400 780 800 820T1440 800V900H0Z' opacity='.62'/></g></svg>");
+}
+
+/* 每日挑战 · 曦光初照 */
+.bg-daily {
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 900' preserveAspectRatio='xMidYMax slice'><defs><linearGradient id='g' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23f6ecd6'/><stop offset='.55' stop-color='%23f4efe3'/><stop offset='1' stop-color='%23f5f0e8'/></linearGradient></defs><rect width='1440' height='900' fill='url(%23g)'/><path d='M0 570Q240 480 480 530T960 510T1440 550V900H0Z' fill='%231e5a8a' opacity='.12'/><g fill='%232b3a42'><path d='M0 660Q260 560 520 630T1040 610T1440 650V900H0Z' opacity='.26'/><path d='M0 790Q340 690 680 760T1300 730T1440 760V900H0Z' opacity='.5'/></g><rect y='600' width='1440' height='34' fill='%23f5f0e8' opacity='.4'/><rect y='668' width='1440' height='26' fill='%23f5f0e8' opacity='.3'/></svg>");
+}
+
+/* 社区 · 平湖归雁 */
+.bg-community {
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 900' preserveAspectRatio='xMidYMax slice'><defs><linearGradient id='h' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23e2e9ea'/><stop offset='.55' stop-color='%23eff0e9'/><stop offset='1' stop-color='%23f5f0e8'/></linearGradient></defs><rect width='1440' height='900' fill='url(%23h)'/><g fill='%232b3a42'><path d='M0 500Q260 430 520 470T1040 455T1440 480V900H0Z' opacity='.14'/><path d='M0 580Q320 510 640 560T1280 540T1440 560V900H0Z' opacity='.24'/></g><rect y='620' width='1440' height='280' fill='%239db8c6' opacity='.16'/><g stroke='%231e5a8a' stroke-width='3' fill='none' opacity='.35' stroke-linecap='round'><path d='M240 760q50 16 100 0'/><path d='M560 820q50 16 100 0'/><path d='M980 780q50 16 100 0'/></g><g stroke='%232b3a42' stroke-width='3.5' fill='none' opacity='.45' stroke-linecap='round'><path d='M660 210q12-13 24 0M692 210q12-13 24 0M724 210q12-13 24 0'/><path d='M905 260q11-12 22 0M935 260q11-12 22 0'/></g><path d='M0 830Q400 780 800 810T1440 795V900H0Z' fill='%232b3a42' opacity='.5'/></svg>");
+}
+
+/* 对战默认（兜底） */
+.bg-duel { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 900' preserveAspectRatio='xMidYMax slice'><rect width='1440' height='900' fill='%23f2efe6'/><g fill='%232b3a42'><path d='M0 640Q240 540 480 610T960 590T1440 620V900H0Z' opacity='.2'/><path d='M0 770Q360 670 720 730T1440 700V900H0Z' opacity='.4'/></g></svg>"); }
+
+/* ================================================================
+   v8 · 半透明卡片：让山水背景透出
+   ================================================================ */
+.mode-card, .diff-btn, .big-action, .bomb-rules, .mini-input,
+.daily-option, .poem-card, .history-item, .lobby-code-box,
+.community-notice, .community-author, .community-board,
+.ff-target-char, .modal-content {
+  background-color: rgba(250, 246, 239, 0.88);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.game-header, .subpage-header {
+  background: rgba(245, 240, 232, 0.72);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+/* 按钮换成墨蓝基调 */
+.btn-primary {
+  background: linear-gradient(135deg, var(--dai) 0%, var(--enamel) 100%);
+}
+.btn-primary:hover { opacity: 0.92; }
+
+.diff-btn.active {
+  background: linear-gradient(135deg, var(--dai) 0%, var(--enamel) 100%);
+  border-color: var(--dai);
+}
+
+.mode-icon {
+  background: linear-gradient(135deg, var(--dai) 0%, var(--enamel) 100%);
+}
+.mode-icon.bomb {
+  background: linear-gradient(135deg, var(--seal-dark) 0%, var(--seal) 100%);
+}
+
+/* 飞花令关键字换成珐琅蓝 */
+.ff-target-char {
+  color: var(--enamel);
+  border-color: var(--enamel);
+}
+
+/* ================================================================
+   v8 · 提示功能
+   ================================================================ */
+.btn-hint {
+  padding: 14px 16px;
+  background: rgba(250, 246, 239, 0.9);
+  color: var(--enamel);
+  border: 1px solid var(--enamel);
+  border-radius: var(--radius);
+  font-family: var(--font-serif);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+.btn-hint:hover {
+  background: var(--enamel);
+  color: #f5f0e8;
+}
+.btn-hint:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.btn-hint:disabled:hover {
+  background: rgba(250, 246, 239, 0.9);
+  color: var(--enamel);
+}
+
+.error-msg {
+  height: auto;
+  min-height: 20px;
+}
+.error-msg.is-hint {
+  color: var(--enamel);
+  font-family: var(--font-serif);
+}
+.hint-glyph {
+  display: inline-block;
+  margin-right: 6px;
+  color: var(--gold);
+  font-weight: 700;
+}
+
+/* ================================================================
+   v8 · 诗友社区
+   ================================================================ */
+.community-entry {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 26px;
+  background: rgba(250, 246, 239, 0.88);
+  border: 1px solid var(--paper-dark);
+  border-radius: 999px;
+  font-family: var(--font-serif);
+  font-size: 15px;
+  letter-spacing: 2px;
+  color: var(--dai);
+  cursor: pointer;
+  transition: var(--transition);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+.community-entry:hover {
+  border-color: var(--enamel);
+  color: var(--enamel);
+  box-shadow: 0 6px 18px var(--shadow);
+  transform: translateY(-1px);
+}
+.community-entry-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--dai), var(--enamel));
+  color: #f5f0e8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.community-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+}
+.community-notice, .community-author, .community-board {
+  background: rgba(250, 246, 239, 0.9);
+  border: 1px solid var(--paper-dark);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+.community-notice-title {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--dai);
+  margin-bottom: 10px;
+  padding-left: 10px;
+  border-left: 3px solid var(--seal);
+}
+.community-notice p {
+  font-size: 14px;
+  color: var(--ink-light);
+  margin-bottom: 8px;
+  line-height: 1.7;
+}
+.community-notice p:last-child { margin-bottom: 0; }
+.community-author .author-line {
+  font-size: 14px;
+  color: var(--ink-light);
+  margin-bottom: 6px;
+}
+.community-author a {
+  color: var(--enamel);
+  text-decoration: none;
+  border-bottom: 1px dashed var(--enamel);
+}
+.community-author .author-tip {
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+.community-post {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.community-textarea {
+  width: 100%;
+  min-height: 72px;
+  padding: 12px 14px;
+  border: 1px solid var(--paper-dark);
+  border-radius: var(--radius);
+  font-size: 14px;
+  background: var(--paper-card);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  resize: vertical;
+}
+.community-textarea:focus {
+  outline: none;
+  border-color: var(--enamel);
+}
+.community-post .btn-primary { align-self: flex-end; }
+.community-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 380px;
+  overflow-y: auto;
+}
+.community-message {
+  padding: 12px 14px;
+  background: var(--paper);
+  border: 1px solid var(--paper-dark);
+  border-radius: var(--radius);
+}
+.community-msg-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+.community-msg-name {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--dai);
+}
+.community-msg-time {
+  font-size: 11px;
+  color: var(--ink-soft);
+}
+.community-msg-del {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--ink-soft);
+  cursor: pointer;
+  font-size: 12px;
+  opacity: 0.5;
+}
+.community-msg-del:hover {
+  opacity: 1;
+  color: var(--seal);
+}
+.community-msg-text {
+  font-size: 14px;
+  color: var(--ink-light);
+  line-height: 1.6;
+  word-break: break-word;
+}
+.community-empty {
+  text-align: center;
+  font-size: 13px;
+  color: var(--ink-soft);
+  padding: 20px;
+  opacity: 0.7;
+}
+
+/* ================================================================
+   v9 · 实景照片背景模式
+   ================================================================ */
+html.has-scenery .screen {
+  background-image: none !important;
+}
+html.has-scenery .mode-card,
+html.has-scenery .diff-btn,
+html.has-scenery .big-action,
+html.has-scenery .bomb-rules,
+html.has-scenery .mini-input,
+html.has-scenery .daily-option,
+html.has-scenery .history-item,
+html.has-scenery .lobby-code-box,
+html.has-scenery .community-notice,
+html.has-scenery .community-author,
+html.has-scenery .community-board,
+html.has-scenery .ff-target-char,
+html.has-scenery .modal-content {
+  background-color: rgba(255, 255, 255, 0.78);
+}
+html.has-scenery .game-header,
+html.has-scenery .subpage-header {
+  background: rgba(255, 255, 255, 0.65);
+}
+
+/* 社区入口图标用书法体 */
+.community-entry-icon {
+  font-family: var(--font-brush);
 }
