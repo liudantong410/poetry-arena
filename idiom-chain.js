@@ -71,7 +71,7 @@ class IdiomChainGame {
       const pick = IdiomDB.pickAI(this.difficulty, this.lastChar, this.usedIdioms);
 
       if (!pick) {
-        this.endGame('player', `AI 无法接出以"${this.lastChar}"开头的成语`);
+        this.endGame('player', `小诗AI无法接出以"${this.lastChar}"开头的成语`);
         return;
       }
 

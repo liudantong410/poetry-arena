@@ -96,7 +96,7 @@ class FlyFlowerGame {
 
       if (available.length === 0) {
         // AI 无法接出，玩家获胜
-        this.endGame('player', 'AI 无法接出诗句');
+        this.endGame('player', '小诗AI无法接出诗句');
         return;
       }
 

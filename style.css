@@ -1,5 +1,19 @@
 /* ========== 诗阵 · 水墨主题 ========== */
 
+/* 本地毛笔书法字体（离线可用） */
+@font-face {
+  font-family: 'ChunFengKai';
+  src: url('fonts/demo-chunfengkai.ttf') format('truetype');
+  font-display: swap;
+  font-weight: 400 900;
+}
+@font-face {
+  font-family: 'YouRanXiaoKai';
+  src: url('fonts/demo-xiaokai.ttf') format('truetype');
+  font-display: swap;
+  font-weight: 400 900;
+}
+
 :root {
   --ink: #1a1a2e;
   --ink-light: #3a3a5c;
@@ -21,7 +35,7 @@
   --radius: 8px;
   --radius-lg: 16px;
   --font-serif: "Noto Serif SC","Source Han Serif SC","Songti SC","SimSun","STSong","Microsoft YaHei",serif;
-  --font-brush: "Ma Shan Zheng","STXingkai","华文行楷","STKaiti","华文楷体","KaiTi","楷体","Songti SC","STSong","SimSun","Microsoft YaHei",serif;
+  --font-brush: "YouRanXiaoKai","ChunFengKai","Ma Shan Zheng","STXingkai","华文行楷","STKaiti","华文楷体","KaiTi","楷体",serif;
   --font-sans: "Noto Sans SC","Source Han Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
   --accent: var(--enamel);
   --transition: 0.3s ease;
@@ -75,10 +89,10 @@ body {
 
 .brand-title {
   font-family: var(--font-brush);
-  font-size: clamp(56px, 14vw, 84px);
+  font-size: clamp(96px, 24vw, 148px);
   font-weight: 700;
-  letter-spacing: 24px;
-  text-indent: 24px; /* 补偿 letter-spacing */
+  letter-spacing: -0.32em;
+  text-indent: -0.32em; /* 补偿 letter-spacing，保持居中 */
   /* 远黛黑 → 珐琅蓝 的墨色渐变，模拟浓淡笔触 */
   background: linear-gradient(180deg, #46565e 0%, #2b3a42 45%, #1e5a8a 115%);
   -webkit-background-clip: text;
@@ -186,7 +200,7 @@ body {
   background: var(--ink);
   color: var(--paper);
   border-radius: 50%;
-  font-family: var(--font-brush);
+  font-family: "ChunFengKai","YouRanXiaoKai","STKaiti","华文楷体","KaiTi","楷体",serif;
   font-size: 30px;
   font-weight: 700;
   flex-shrink: 0;
@@ -369,39 +383,89 @@ body {
   font-weight: 300;
 }
 
-/* 游戏主区域 */
+/* 游戏主区域（纵向：控制条 → 输入框 → 历史答案） */
 .game-board {
-  flex: 1;
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
-  padding: 0 24px 24px;
-  gap: 16px;
+  padding: 0 24px 8px;
+  gap: 12px;
+  max-width: 760px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* 居中纵向控制区：关键字 → 回合提示 → 时间条 */
+.control-strip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 4px 6px;
+}
+
+/* 飞花令关键字（标签在字正上方） */
+.control-strip .ff-target-area {
+  flex-direction: column;
+  gap: 3px;
+}
+
+/* 回合提示紧随关键字 */
+.control-strip .turn-bar {
+  justify-content: center;
+  text-align: center;
+  min-width: 0;
+  min-height: 30px;
+  padding: 0;
+}
+
+/* 时间条居中、定宽 */
+.control-strip .timer-area {
+  width: 260px;
+  min-width: 0;
 }
 
 /* 飞花令目标字 */
 .ff-target-area {
-  text-align: center;
-  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  flex-shrink: 0;
 }
 
 .ff-target-label {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--ink-soft);
-  letter-spacing: 2px;
-  margin-bottom: 8px;
+  letter-spacing: 1px;
+  white-space: nowrap;
 }
 
 .ff-target-char {
   font-family: var(--font-serif);
-  font-size: 64px;
+  font-size: 34px;
   font-weight: 900;
   color: var(--seal);
-  display: inline-block;
-  padding: 8px 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  padding: 0;
   border: 2px solid var(--seal);
   border-radius: 8px;
   background: var(--paper-card);
+  line-height: 1;
   animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* 问号占位：半角问号字形居中正常，斜体雅致，禁止选中 */
+.ff-target-char.is-placeholder {
+  font-family: Georgia, "Times New Roman", serif;
+  font-style: italic;
+  font-weight: 700;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 @keyframes pulse-glow {
@@ -411,15 +475,17 @@ body {
 
 /* 回合指示 */
 .turn-bar {
-  text-align: center;
+  text-align: left;
   font-family: var(--font-serif);
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
-  padding: 12px;
-  min-height: 48px;
+  padding: 8px 4px;
+  min-height: 40px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
+  min-width: 120px;
+  z-index: 1;
 }
 
 .turn-player {
@@ -445,7 +511,9 @@ body {
 .timer-area {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  flex-shrink: 0;
+  min-width: 150px;
 }
 
 .timer-display {
@@ -485,12 +553,10 @@ body {
 
 /* 历史记录 */
 .history-area {
-  flex: 1;
-  max-height: 360px;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  padding-right: 4px;
 }
 
 .history-item {
@@ -553,12 +619,24 @@ body {
   color: var(--gold);
 }
 
-/* 输入区 */
+/* 输入区（在历史答案上方） */
 .input-area {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding-top: 8px;
+  padding: 10px 12px 12px;
+  background: rgba(250,246,239,0.75);
+  border: 1px solid var(--paper-dark);
+  border-radius: var(--radius-lg);
+}
+
+/* 小诗AI 思考中：输入区保持原位，仅淡化禁用 */
+.input-area.is-waiting {
+  opacity: 0.6;
+}
+.input-area input:disabled,
+.input-area button:disabled {
+  cursor: not-allowed;
 }
 
 .input-hint {
@@ -648,10 +726,52 @@ body {
 /* 开始按钮 */
 .start-area {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 40px 24px;
+  padding: 32px 24px;
   flex: 1;
+  gap: 24px;
+}
+
+/* 局数选择 */
+.round-selector {
+  text-align: center;
+}
+.round-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+.round-btn {
+  padding: 12px 22px;
+  background: var(--paper-card);
+  border: 1px solid var(--paper-dark);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-family: var(--font-serif);
+  font-size: 15px;
+  color: var(--ink);
+  transition: var(--transition);
+}
+.round-btn:hover { border-color: var(--enamel); }
+.round-btn.active {
+  background: linear-gradient(135deg, var(--dai) 0%, var(--enamel) 100%);
+  color: #fff;
+  border-color: var(--enamel);
+}
+
+/* 局数进度 */
+.round-info {
+  font-family: var(--font-serif);
+  font-size: 13px;
+  color: var(--ink-soft);
+  text-align: center;
+  padding: 5px 12px;
+  background: rgba(250,246,239,0.7);
+  border-radius: 999px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .btn-start {
@@ -1179,16 +1299,19 @@ body {
 
 /* ========== 响应式 ========== */
 @media (max-width: 480px) {
-  .brand-title { font-size: 56px; letter-spacing: 16px; }
+  .brand-title { font-size: 88px; letter-spacing: -0.32em; text-indent: -0.32em; }
   .mode-card { padding: 16px; gap: 12px; }
   .mode-icon { width: 44px; height: 44px; font-size: 22px; }
   .game-header { flex-wrap: wrap; padding: 12px 16px; }
   .game-desc { display: none; }
-  .game-board { padding: 0 16px 16px; }
+  .game-board { padding: 0 12px 16px; }
+  .control-strip { gap: 8px; }
+  .timer-area { min-width: 96px; gap: 6px; }
+  .turn-bar { min-width: 72px; font-size: 15px; }
   .diff-buttons { flex-direction: column; }
   .input-row { flex-wrap: wrap; }
   #game-input { font-size: 18px; }
-  .ff-target-char { font-size: 48px; }
+  .ff-target-char { font-size: 28px; width: 48px; height: 48px; }
   .history-line { font-size: 18px; }
   .bomb-cue-main { font-size: 46px; letter-spacing: 4px; }
   .lobby-code { font-size: 44px; letter-spacing: 10px; }
@@ -1658,7 +1781,229 @@ html.has-scenery .subpage-header {
   background: rgba(255, 255, 255, 0.65);
 }
 
-/* 社区入口图标用书法体 */
+/* 社区入口圆框图标用春风楷 */
 .community-entry-icon {
-  font-family: var(--font-brush);
+  font-family: "ChunFengKai","YouRanXiaoKai","STKaiti","华文楷体","KaiTi","楷体",serif;
+}
+
+/* ================================================================
+   v26 · 生僻字玩法 + 我的（积分）系统
+   ================================================================ */
+
+/* 生僻字 · 苔绿竹石幽谷 */
+.bg-rare {
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 900' preserveAspectRatio='xMidYMax slice'><defs><linearGradient id='r' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23e6ebe4'/><stop offset='.55' stop-color='%23f1efe4'/><stop offset='1' stop-color='%23f5f0e8'/></linearGradient></defs><rect width='1440' height='900' fill='url(%23r)'/><g fill='%236b7f6a'><path d='M0 560Q220 470 440 530T900 510T1440 550V900H0Z' opacity='.14'/><path d='M0 680Q280 570 560 650T1120 630T1440 660V900H0Z' opacity='.26'/></g><path d='M0 820Q360 730 720 790T1440 770V900H0Z' fill='%234a5d4a' opacity='.45'/><g stroke='%234a5d4a' fill='none' stroke-linecap='round' opacity='.4'><path d='M150 900V560' stroke-width='7'/><path d='M118 900V640' stroke-width='5'/><path d='M124 700q-48-28-92-20' stroke-width='3.5'/><path d='M126 760q48-32 90-26' stroke-width='3.5'/><path d='M152 640q-42-34-82-38' stroke-width='3.5'/><path d='M154 590q40-34 78-38' stroke-width='3.5'/></g><g stroke='%231e5a8a' stroke-width='3' fill='none' opacity='.3' stroke-linecap='round'><path d='M1130 800q44 14 88 0'/><path d='M1260 840q44 14 88 0'/></g></svg>");
+}
+
+/* 首页右上角【我的】入口 */
+.me-btn {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 20;
+  padding: 8px 20px;
+  border-radius: 999px;
+  border: 1.5px solid var(--enamel);
+  background: rgba(250, 246, 239, 0.9);
+  color: var(--enamel);
+  font-family: var(--font-serif);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.me-btn:hover { background: var(--enamel); color: #f5f0e8; }
+.me-btn .me-btn-badge { color: var(--seal); margin-left: 6px; font-size: 13px; }
+
+/* 模式卡上的个人最高分 */
+.mode-high {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--seal);
+  font-weight: 700;
+  letter-spacing: .5px;
+}
+
+/* ---------- 生僻字界面 ---------- */
+.rc-setup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  padding: 24px 16px 40px;
+  max-width: 560px;
+  margin: 0 auto;
+  width: 100%;
+}
+.rc-group { width: 100%; text-align: center; }
+.rc-group .round-buttons { justify-content: center; }
+.rc-mode-tip {
+  display: none;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+.rc-rules {
+  width: 100%;
+  padding: 14px 18px;
+  border-radius: var(--radius);
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--ink);
+}
+.rc-rules p { margin: 6px 0 0; }
+
+.rc-play {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  padding: 24px 16px 40px;
+  max-width: 560px;
+  margin: 0 auto;
+  width: 100%;
+}
+.rc-status {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--dai);
+}
+.rc-question { text-align: center; }
+.rc-word {
+  font-family: "ChunFengKai","YouRanXiaoKai","STKaiti","华文楷体","KaiTi","楷体",serif;
+  font-size: 64px;
+  font-weight: 700;
+  color: var(--dai);
+  line-height: 1.3;
+}
+.rc-word .rc-target { color: var(--seal); }
+.rc-qtext { margin-top: 6px; font-size: 16px; color: var(--ink); }
+.rc-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+}
+.rc-option {
+  padding: 16px 10px;
+  font-size: 20px;
+  text-align: center;
+  border: 1.5px solid rgba(43,58,66,.25);
+  border-radius: var(--radius);
+  background: rgba(250,246,239,.88);
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: var(--font-serif);
+  color: var(--ink);
+}
+.rc-option:hover:not(:disabled) { border-color: var(--enamel); color: var(--enamel); }
+.rc-option:disabled { opacity: .35; cursor: not-allowed; }
+.rc-option.ok { border-color: #3a7d44; color: #3a7d44; font-weight: 700; }
+.rc-option.wrong { border-color: var(--seal); color: var(--seal); }
+.rc-fill-row {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+.rc-fill-row .mini-input { flex: 1; font-size: 18px; padding: 12px 14px; }
+.rc-feedback {
+  min-height: 26px;
+  font-size: 15px;
+  font-weight: 700;
+  text-align: center;
+}
+.rc-feedback.ok { color: #3a7d44; }
+.rc-feedback.wrong { color: var(--seal); }
+.rc-feedback .rc-note { display: block; margin-top: 4px; font-weight: 400; font-size: 13px; color: var(--ink-soft); }
+.rc-actions { display: flex; gap: 12px; }
+
+.rc-over {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 24px 16px 40px;
+  max-width: 560px;
+  margin: 0 auto;
+  width: 100%;
+}
+.rc-over-high { font-size: 14px; color: var(--seal); font-weight: 700; }
+.rc-review {
+  width: 100%;
+  max-height: 300px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.rc-review-item {
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  background: rgba(250,246,239,.88);
+  font-size: 14px;
+  line-height: 1.7;
+}
+.rc-review-item .rc-mark { font-weight: 700; margin-right: 6px; }
+.rc-review-item.ok .rc-mark { color: #3a7d44; }
+.rc-review-item.wrong .rc-mark { color: var(--seal); }
+.rc-review-item .rc-review-note { color: var(--ink-soft); font-size: 12.5px; }
+
+/* ---------- 我的弹窗 ---------- */
+.me-content { max-width: 480px; text-align: left; }
+.me-title {
+  text-align: center;
+  font-family: "ChunFengKai","YouRanXiaoKai","STKaiti","华文楷体","KaiTi","楷体",serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--dai);
+  margin-bottom: 14px;
+}
+.me-tip { font-size: 13px; color: var(--ink-soft); margin-bottom: 10px; }
+.me-login-row { display: flex; gap: 10px; }
+.me-login-row .mini-input { flex: 1; }
+.me-total-line { margin-top: 10px; font-size: 14px; color: var(--ink); }
+.me-total-line b { color: var(--seal); }
+.me-head { display: flex; align-items: center; gap: 12px; }
+.me-avatar {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, var(--dai) 0%, var(--enamel) 100%);
+  color: #f5f0e8;
+  font-family: "ChunFengKai","YouRanXiaoKai","STKaiti","华文楷体","KaiTi","楷体",serif;
+  font-size: 24px; font-weight: 700;
+  flex-shrink: 0;
+}
+.me-head-info { flex: 1; }
+.me-name { font-size: 17px; font-weight: 700; color: var(--ink); }
+.me-total { font-size: 14px; color: var(--ink-soft); margin-top: 2px; }
+.me-total b { color: var(--seal); font-size: 17px; }
+.me-highs { margin-top: 18px; }
+.me-highs-title {
+  font-size: 14px; font-weight: 700; color: var(--dai);
+  border-left: 3px solid var(--enamel);
+  padding-left: 8px;
+  margin-bottom: 10px;
+}
+.me-highs-list { display: flex; flex-direction: column; gap: 6px; }
+.me-high-row {
+  display: flex; justify-content: space-between;
+  font-size: 14px; color: var(--ink);
+  padding: 7px 12px;
+  border-radius: var(--radius);
+  background: rgba(250,246,239,.7);
+  border: 1px solid rgba(43,58,66,.12);
+}
+.me-high-row b { color: var(--seal); }
+.me-skins { margin-top: 18px; }
+.me-skin-tip { font-size: 13px; color: var(--ink-soft); line-height: 1.7; }
+
+/* 结算页新纪录高亮 */
+.result-newhigh {
+  color: var(--seal);
+  font-weight: 700;
+  font-size: 14px;
 }

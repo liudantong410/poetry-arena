@@ -1,20 +1,26 @@
 // 诗阵 Service Worker - 离线缓存
-const CACHE_NAME = 'poetry-arena-v10';
+const CACHE_NAME = 'poetry-arena-v26';
 const ASSETS = [
   './',
   './index.html',
-  './style.css?v=10',
-  './poetry-db.js?v=10',
-  './fly-flower.js?v=10',
-  './chain.js?v=10',
-  './idiom-db.js?v=10',
-  './idiom-chain.js?v=10',
-  './word-bank.js?v=10',
-  './bomb.js?v=10',
-  './bomb-online.js?v=10',
-  './daily-challenge.js?v=10',
-  './app.js?v=10',
-  './manifest.json?v=10'
+  './style.css?v=26',
+  './scores.js?v=26',
+  './rare-chars-db.js?v=26',
+  './rare-chars.js?v=26',
+  './poetry-extra-tang.js?v=26',
+  './poetry-extra-songci.js?v=26',
+  './poetry-extra-classic.js?v=26',
+  './poetry-db.js?v=26',
+  './fly-flower.js?v=26',
+  './chain.js?v=26',
+  './idiom-db.js?v=26',
+  './idiom-chain.js?v=26',
+  './word-bank.js?v=26',
+  './bomb.js?v=26',
+  './bomb-online.js?v=26',
+  './daily-challenge.js?v=26',
+  './app.js?v=26',
+  './manifest.json?v=26'
 ];
 
 self.addEventListener('install', (e) => {
@@ -27,18 +33,19 @@ self.addEventListener('install', (e) => {
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.map(k => k !== CACHE_NAME && caches.delete(k)))
-    )
+      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+    ).then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
 self.addEventListener('fetch', (e) => {
+  if (e.request.method !== 'GET') return;
   e.respondWith(
     caches.match(e.request).then(cached => {
-      return cached || fetch(e.request).then(resp => {
-        // 只缓存同源请求（PeerJS CDN 不缓存）
-        if (e.request.method === 'GET' && e.request.url.startsWith(location.origin)) {
+      if (cached) return cached;
+      return fetch(e.request).then(resp => {
+        // 同源静态资源动态缓存（字体等）
+        if (resp.ok && new URL(e.request.url).origin === self.location.origin) {
           const copy = resp.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(e.request, copy));
         }

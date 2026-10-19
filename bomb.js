@@ -20,6 +20,7 @@ class BombGame {
     this.seats = opts.seats;
     this.timeLimit = opts.timeLimit || 30;
     this.hostDriven = !!opts.hostDriven;
+    this.maxWordsEach = opts.maxWordsEach || 5; // 单机词语模式每人限说词数
 
     this.round = null;          // word: {code,words,bomb}  poem: {char,candidates,bombLine}
     this.usedSet = new Set();
@@ -40,7 +41,8 @@ class BombGame {
 
   start() {
     if (this.kind === 'word') {
-      this.round = BombWords.newRound();
+      // 只抽一小撮候选（含炸弹），不把整个词库当作剩余词汇
+      this.round = BombWords.newRound(12);
     } else {
       this.round = this.makePoemRound();
     }
@@ -75,6 +77,21 @@ class BombGame {
   beginTurn() {
     if (this.gameOver) return;
     this.stopTimer();
+
+    // 候选耗尽仍无人踩雷：平局，揭晓炸弹
+    const total = this.kind === 'word'
+      ? this.round.words.length
+      : this.round.candidates.length;
+    if (this.usedSet.size >= total) { this.endGame(null); return; }
+
+    // 单机词语模式：每人限说 maxWordsEach 个词，说完无人踩雷则平局
+    if (!this.hostDriven && this.kind === 'word') {
+      const counts = {};
+      this.history.forEach(h => { counts[h.seatId] = (counts[h.seatId] || 0) + 1; });
+      const allMax = this.seats.every(s => (counts[s.id] || 0) >= this.maxWordsEach);
+      if (allMax) { this.endGame(null); return; }
+    }
+
     const seat = this.seats[this.current];
 
     if (seat.isAI) {
@@ -188,9 +205,9 @@ class BombGame {
       }
     }
     if (!pick) {
-      // 候选耗尽（极端情况）：判 AI 负
+      // 候选耗尽：无人踩雷，平局
       this.stopTimer();
-      this.endGame(seat.id);
+      this.endGame(null);
       return;
     }
     this.usedSet.add(pick.word);
@@ -228,11 +245,11 @@ class BombGame {
 
   endGame(loserId) {
     this.gameOver = true;
-    this.loserId = loserId;
+    this.loserId = loserId; // null = 平局（无人踩雷）
     this.stopTimer();
     this.notify();
     const loser = this.seats.find(s => s.id === loserId);
-    if (this.onSeatExplode) this.onSeatExplode(loser);
+    if (loser && this.onSeatExplode) this.onSeatExplode(loser);
     if (this.onGameOver) {
       this.onGameOver(loserId, this.getState());
     }

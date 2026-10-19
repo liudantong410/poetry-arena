@@ -118,7 +118,7 @@ class BombHost {
     const seats = [{ id: 'host', name: this.hostName, isLocal: true }];
     for (const g of this.guests) seats.push({ id: g.id, name: g.name, online: g.online });
     for (let i = 0; i < this.aiCount; i++) {
-      seats.push({ id: 'ai' + i, name: AI_NAMES[i] || ('AI' + (i + 1)), isAI: true });
+      seats.push({ id: 'ai' + i, name: AI_NAMES[i] || ('小诗AI' + (i + 1)), isAI: true });
     }
     return seats;
   }
@@ -255,4 +255,4 @@ class BombGuest {
 }
 
 /** AI 玩家名字（诗词味） */
-const AI_NAMES = ["子衿", "采葛", "蒹葭", "木兮", "白露", "青衿"];
+const AI_NAMES = ["小诗AI", "子衿", "采葛", "蒹葭", "木兮", "白露"];

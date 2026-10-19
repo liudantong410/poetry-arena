@@ -106,7 +106,7 @@ class ChainGame {
 
       if (available.length === 0) {
         // AI 无法接出，玩家获胜
-        this.endGame('player', `AI 无法接出以"${this.lastChar}"开头的诗句`);
+        this.endGame('player', `小诗AI无法接出以"${this.lastChar}"开头的诗句`);
         return;
       }
 

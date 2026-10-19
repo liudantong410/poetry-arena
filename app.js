@@ -10,6 +10,7 @@ const App = {
   duelMode: null,
   game: null,
   errorTimer: null,
+  duelMaxRounds: 0,        // 0=无尽（一方失败结束）, 5/10=每人 N 句后按总分结算
 
   // 炸弹
   bombKind: null,          // 'word' | 'poem'
@@ -70,6 +71,7 @@ const App = {
         else if (mode === 'bomb-poem') this.openBombSolo('poem');
         else if (mode === 'bomb-word-menu') this.show('screen-bomb-menu');
         else if (mode === 'daily-challenge') this.openDaily();
+        else if (mode === 'rare-chars') this.openRare();
       });
     });
 
@@ -85,6 +87,14 @@ const App = {
     // 飞花令/接龙
     document.getElementById('btn-start').addEventListener('click', () => this.startDuel());
     document.getElementById('btn-submit').addEventListener('click', () => this.duelSubmit());
+    // 局数选择
+    document.querySelectorAll('.round-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        this.duelMaxRounds = parseInt(btn.dataset.rounds, 10);
+        document.querySelectorAll('.round-btn').forEach(b =>
+          b.classList.toggle('active', b === btn));
+      });
+    });
     document.getElementById('game-input').addEventListener('keydown', e => {
       if (e.key === 'Enter') this.duelSubmit();
     });
@@ -143,6 +153,57 @@ const App = {
     document.getElementById('btn-community').addEventListener('click', () => this.openCommunity());
     document.querySelector('.btn-community-back').addEventListener('click', () => this.show('screen-home'));
     document.getElementById('btn-community-post').addEventListener('click', () => this.postCommunity());
+
+    // 生僻字 · 设置区
+    document.querySelectorAll('.rc-cat').forEach(btn => {
+      btn.addEventListener('click', () => {
+        this.rareCat = btn.dataset.cat;
+        document.querySelectorAll('.rc-cat').forEach(b => b.classList.toggle('active', b === btn));
+      });
+    });
+    document.querySelectorAll('.rc-play').forEach(btn => {
+      btn.addEventListener('click', () => {
+        this.rarePlayMode = btn.dataset.play;
+        document.querySelectorAll('.rc-play').forEach(b => b.classList.toggle('active', b === btn));
+      });
+    });
+    document.querySelectorAll('.rc-round').forEach(btn => {
+      btn.addEventListener('click', () => {
+        this.rareRounds = parseInt(btn.dataset.rounds, 10);
+        document.querySelectorAll('.rc-round').forEach(b => b.classList.toggle('active', b === btn));
+        document.getElementById('rc-mode-tip').style.display = this.rareRounds === 0 ? 'block' : 'none';
+      });
+    });
+    document.getElementById('btn-rare-start').addEventListener('click', () => this.startRare());
+    document.getElementById('btn-rare-back').addEventListener('click', () => {
+      this.rareGame = null;
+      this.show('screen-home');
+    });
+    // 生僻字 · 游戏区
+    document.getElementById('btn-rc-submit').addEventListener('click', () => this.rareSubmitFill());
+    document.getElementById('rc-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') this.rareSubmitFill();
+    });
+    document.getElementById('btn-rc-hint').addEventListener('click', () => this.rareHint());
+    document.getElementById('btn-rc-finish').addEventListener('click', () => {
+      if (this.rareGame) { this.rareGame.finish(); this.showRareOver(); }
+    });
+    document.getElementById('btn-rc-again').addEventListener('click', () => this.startRare());
+    document.getElementById('btn-rc-home').addEventListener('click', () => this.show('screen-home'));
+
+    // 我的（积分与账号）
+    document.getElementById('btn-me').addEventListener('click', () => this.openMe());
+    document.getElementById('btn-me-close').addEventListener('click', () =>
+      document.getElementById('me-modal').classList.remove('active'));
+    document.getElementById('btn-me-login').addEventListener('click', () => this.meLogin());
+    document.getElementById('me-name').addEventListener('keydown', e => {
+      if (e.key === 'Enter') this.meLogin();
+    });
+    document.getElementById('btn-me-logout').addEventListener('click', () => {
+      Scores.logout();
+      this.renderMe();
+      this.updateStats();
+    });
   },
 
   updateStats() {
@@ -150,6 +211,32 @@ const App = {
     const wordCount = Object.values(WORD_BANK).reduce((n, arr) => n + arr.length, 0);
     const el = document.getElementById('db-stats');
     if (el) el.textContent = `诗词库：${s.poems} 首 / ${s.lines} 句 · 炸弹词库：${wordCount} 词 · 成语库：${IdiomDB.getSize()} 条`;
+    this.updateHighs();
+  },
+
+  /** 各模式卡显示个人最高分；【我的】按钮显示总积分 */
+  updateHighs() {
+    document.querySelectorAll('.mode-card').forEach(card => {
+      let mode = card.dataset.mode;
+      if (mode === 'bomb-word-menu') mode = 'bomb-word';
+      const high = Scores.getHigh(mode);
+      const info = card.querySelector('.mode-info');
+      if (!info) return;
+      let line = info.querySelector('.mode-high');
+      if (!line) {
+        line = document.createElement('div');
+        line.className = 'mode-high';
+        info.appendChild(line);
+      }
+      line.textContent = high > 0 ? `我的最高分：${high}` : '';
+    });
+    const meBtn = document.getElementById('btn-me');
+    if (meBtn) {
+      const p = Scores.getProfile();
+      meBtn.innerHTML = p.name
+        ? `我的<span class="me-btn-badge">${p.total} 分</span>`
+        : '我的';
+    }
   },
 
   // ================================================================
@@ -169,15 +256,18 @@ const App = {
     const desc = document.getElementById('game-desc');
     const ffArea = document.getElementById('ff-target-area');
     if (mode === 'fly-flower') {
-      title.textContent = '飞花令 · AI 擂台';
-      desc.textContent = '与 AI 轮流说出含指定关键字的诗句，接不出者负';
-      ffArea.style.display = 'block';
+      title.textContent = '飞花令 · 小诗AI擂台';
+      desc.textContent = '与小诗AI轮流说出含指定关键字的诗句，接不出者负';
+      ffArea.style.display = 'flex';
+      const ffChar = document.getElementById('ff-target');
+      ffChar.textContent = '?';
+      ffChar.classList.add('is-placeholder');
     } else if (mode === 'idiom-chain') {
-      title.textContent = '成语接龙 · AI 对战';
+      title.textContent = '成语接龙 · 小诗AI对战';
       desc.textContent = '顶针格接龙，上句末字即下句首字，接不出者负';
       ffArea.style.display = 'none';
     } else {
-      title.textContent = '接龙 · AI 对战';
+      title.textContent = '接龙 · 小诗AI对战';
       desc.textContent = '诗句接龙，上句末字即下句首字，接不出者负';
       ffArea.style.display = 'none';
     }
@@ -187,6 +277,12 @@ const App = {
   startDuel() {
     document.getElementById('start-area').style.display = 'none';
     document.getElementById('input-area').style.display = 'flex';
+    if (this.duelMode === 'fly-flower') {
+      document.getElementById('ff-target-area').style.display = 'flex';
+      const ffChar = document.getElementById('ff-target');
+      ffChar.textContent = '?';
+      ffChar.classList.add('is-placeholder');
+    }
     document.getElementById('score-player').textContent = '0';
     document.getElementById('score-ai').textContent = '0';
     document.getElementById('history-list').innerHTML = '';
@@ -206,18 +302,42 @@ const App = {
       if (this.duelMode === 'fly-flower') this.renderFlyFlower(s);
       else if (this.duelMode === 'idiom-chain') this.renderIdiomChain(s);
       else this.renderChain(s);
+      // 回合制：玩家出满 N 句（小诗AI 也已逐句回应）后按累计比分结算
+      if (this.duelMaxRounds > 0 && !this.game.gameOver && s.currentTurn === 'player') {
+        const list = s.history || s.chain || [];
+        const playerCount = list.filter(h => h.who === 'player').length;
+        if (playerCount >= this.duelMaxRounds) {
+          const w = s.playerScore > s.aiScore ? 'player'
+            : s.aiScore > s.playerScore ? 'ai' : 'draw';
+          this.game.endGame(w,
+            `${this.duelMaxRounds} 回合结束 · 你 ${s.playerScore} : ${s.aiScore} 小诗AI`);
+        }
+      }
     };
     this.game.onTimerTick = t => this.renderDuelTimer(t);
     this.game.onAIThinking = () => {
       document.getElementById('turn-indicator').innerHTML =
-        '<span class="turn-ai">AI 思考中<span class="dots">...</span></span>';
+        '<span class="turn-ai">小诗AI思考中<span class="dots">...</span></span>';
     };
     this.game.onGameOver = (winner, reason, result) => this.showDuelResult(winner, reason, result);
     this.game.start();
   },
 
+  /** 输入区启用/禁用（AI 思考时仅禁用，不隐藏，保持布局稳定） */
+  setInputEnabled(on) {
+    const input = document.getElementById('game-input');
+    document.getElementById('btn-submit').disabled = !on;
+    document.getElementById('btn-hint').disabled = !on || this.game.hintsLeft <= 0;
+    document.getElementById('btn-pass').disabled = !on;
+    input.disabled = !on;
+    document.getElementById('input-area').classList.toggle('is-waiting', !on);
+    if (on) input.focus();
+  },
+
   renderFlyFlower(s) {
-    document.getElementById('ff-target').textContent = s.targetChar;
+    const ffChar = document.getElementById('ff-target');
+    ffChar.textContent = s.targetChar;
+    ffChar.classList.remove('is-placeholder');
     document.getElementById('score-player').textContent = s.playerScore;
     document.getElementById('score-ai').textContent = s.aiScore;
     const turn = document.getElementById('turn-indicator');
@@ -225,10 +345,11 @@ const App = {
     if (s.currentTurn === 'player' && !s.gameOver) {
       turn.innerHTML = '<span class="turn-player">你的回合</span>';
       input.style.display = 'flex';
-      document.getElementById('game-input').focus();
+      this.setInputEnabled(true);
     } else if (!s.gameOver) {
-      turn.innerHTML = '<span class="turn-ai">AI 思考中...</span>';
-      input.style.display = 'none';
+      turn.innerHTML = '<span class="turn-ai">小诗AI思考中...</span>';
+      input.style.display = 'flex';
+      this.setInputEnabled(false);
     }
     this.renderDuelHistory(s.history, false);
     document.getElementById('input-hint').textContent = `请输入含"${s.targetChar}"字的诗句`;
@@ -242,10 +363,11 @@ const App = {
     if (s.currentTurn === 'player' && !s.gameOver) {
       turn.innerHTML = '<span class="turn-player">你的回合</span>';
       input.style.display = 'flex';
-      document.getElementById('game-input').focus();
+      this.setInputEnabled(true);
     } else if (!s.gameOver) {
-      turn.innerHTML = '<span class="turn-ai">AI 思考中...</span>';
-      input.style.display = 'none';
+      turn.innerHTML = '<span class="turn-ai">小诗AI思考中...</span>';
+      input.style.display = 'flex';
+      this.setInputEnabled(false);
     }
     this.renderDuelHistory(s.chain, true);
     document.getElementById('input-hint').textContent = s.isFirst
@@ -261,10 +383,11 @@ const App = {
     if (s.currentTurn === 'player' && !s.gameOver) {
       turn.innerHTML = '<span class="turn-player">你的回合</span>';
       input.style.display = 'flex';
-      document.getElementById('game-input').focus();
+      this.setInputEnabled(true);
     } else if (!s.gameOver) {
-      turn.innerHTML = '<span class="turn-ai">AI 思考中...</span>';
-      input.style.display = 'none';
+      turn.innerHTML = '<span class="turn-ai">小诗AI思考中...</span>';
+      input.style.display = 'flex';
+      this.setInputEnabled(false);
     }
     const box = document.getElementById('history-list');
     box.innerHTML = '';
@@ -348,15 +471,20 @@ const App = {
     this.errorTimer = setTimeout(() => el.classList.remove('show', 'is-hint'), 6000);
   },
 
+  /** 对局结束结算弹窗 */
   showDuelResult(winner, reason, result) {
     document.getElementById('input-area').style.display = 'none';
     document.getElementById('timer-bar').style.width = '0%';
     const title = document.getElementById('result-title');
-    title.textContent = winner === 'player' ? '你赢了！' : 'AI 获胜';
+    title.textContent = winner === 'player' ? '你赢了！' : winner === 'draw' ? '平局！' : '小诗AI获胜';
     title.className = winner === 'player' ? 'result-win' : 'result-lose';
     document.getElementById('result-reason').textContent = reason;
+    const rec = Scores.addResult(this.duelMode, result.playerScore);
+    this.updateHighs();
     document.getElementById('result-score').innerHTML =
-      `你：${result.playerScore} 分　|　AI：${result.aiScore} 分`;
+      `你：${result.playerScore} 分　|　小诗AI：${result.aiScore} 分` +
+      (rec.isNewHigh && result.playerScore > 0
+        ? `<br><span class="result-newhigh">新纪录！个人最高分 ${rec.high} 分</span>` : '');
 
     const list = result.history || result.chain || [];
     const seen = new Set();
@@ -407,7 +535,9 @@ const App = {
     document.getElementById('history-list').innerHTML = '';
     document.getElementById('start-area').style.display = 'flex';
     document.getElementById('turn-indicator').textContent = '准备开始...';
-    document.getElementById('timer-display').textContent = '--';
+    document.getElementById('timer-display').textContent =
+      `限时 ${this.timeByDifficulty()} 秒`;
+    document.getElementById('timer-bar').style.width = '100%';
   },
 
   // ================================================================
@@ -431,25 +561,25 @@ const App = {
     if (kind === 'word') {
       rules.innerHTML = `
         <div class="bomb-rules-title">玩法</div>
-        <p>系统给出拼音首字母（如 <b>BM</b>，即首字声母 <b>B</b> + 次字声母 <b>M</b>，如「保密 bǎomì」「报名 bàomíng」「避免 bìmiǎn」），所有符合的词中藏着<b>唯一一个炸弹词</b>。你和 3 名 AI 围坐轮流说词，安全词被逐个排除——<b>踩中炸弹词者输</b>。AI 同样不知道炸弹是哪个。</p>`;
+        <p>系统给出两字词的拼音首字母组合（如 <b>B+M</b>，即首字声母 <b>B</b> + 次字声母 <b>M</b>，如「保密 bǎomì」「报名 bàomíng」「避免 bìmiǎn」），本局从中抽出约 <b>12 个候选词</b>，其中暗藏<b>唯一一个炸弹词</b>。你与小诗AI<b>一对一</b>轮流说词，每人限说 <b>5 个</b>——<b>谁说出炸弹词谁输</b>，说完无人踩雷则平局并揭晓炸弹。小诗AI同样不知道炸弹是哪个。</p>`;
     } else {
       rules.innerHTML = `
         <div class="bomb-rules-title">玩法</div>
-        <p>系统给定一个关键字（如 <b>月</b>），题库中所有含该字的诗句里藏着<b>唯一一句炸弹诗</b>。你和 3 名 AI 轮流说出含该字的诗句，<b>谁说出炸弹句谁炸</b>。名句未必安全，冷门也可能是陷阱。</p>`;
+        <p>系统给定一个关键字（如 <b>月</b>），题库中所有含该字的诗句里藏着<b>唯一一句炸弹诗</b>。你与小诗AI<b>一对一</b>轮流说出含该字的诗句，<b>谁说出炸弹句谁炸</b>。名句未必安全，冷门也可能是陷阱。</p>`;
     }
   },
 
   startBombSolo() {
+    // 单机一对一：你 vs 小诗AI
     const seats = [
       { id: 'human', name: '你', isLocal: true },
-      { id: 'ai0', name: AI_NAMES[0], isAI: true },
-      { id: 'ai1', name: AI_NAMES[1], isAI: true },
-      { id: 'ai2', name: AI_NAMES[2], isAI: true }
+      { id: 'ai0', name: AI_NAMES[0], isAI: true }
     ];
     this.bombGame = new BombGame({
       kind: this.bombKind,
       seats,
-      timeLimit: this.bombKind === 'word' ? 30 : this.timeByDifficulty()
+      timeLimit: this.bombKind === 'word' ? 30 : this.timeByDifficulty(),
+      maxWordsEach: 5
     });
     this.bindBombEngine(this.bombGame);
     document.getElementById('bomb-intro').style.display = 'none';
@@ -547,7 +677,7 @@ const App = {
       chip.className = cls;
       chip.innerHTML = `
         <span class="seat-name">${seat.id === this.localSeatId ? '你' : seat.name}</span>
-        ${seat.isAI ? '<span class="seat-tag">AI</span>' : ''}`;
+        ${seat.isAI ? '<span class="seat-tag">小诗AI</span>' : ''}`;
       seatsBox.appendChild(chip);
     });
 
@@ -627,9 +757,15 @@ const App = {
     document.getElementById('bomb-input-area').style.display = 'none';
 
     const title = document.getElementById('bomb-over-title');
-    const iLose = loserId === this.localSeatId;
-    title.textContent = iLose ? '你踩雷了！' : `${loser ? loser.name : '对手'} 踩雷，你幸存！`;
-    title.className = iLose ? 'result-lose' : 'result-win';
+    if (!loserId) {
+      // 平局：无人踩雷
+      title.textContent = '平局！炸弹无人踩中';
+      title.className = 'result-win';
+    } else {
+      const iLose = loserId === this.localSeatId;
+      title.textContent = iLose ? '你踩雷了！' : `${loser ? loser.name : '对手'} 踩雷，你幸存！`;
+      title.className = iLose ? 'result-lose' : 'result-win';
+    }
 
     const reveal = document.getElementById('bomb-reveal');
     const detail = document.getElementById('bomb-poem-detail');
@@ -643,6 +779,17 @@ const App = {
         <div class="bomb-poem-title">《${p.t}》 ${p.d}·${p.a}</div>
         <div class="poem-lines center">${p.lines.join('，')}。</div>
         <div class="poem-card-source">${p.s}</div>`;
+    }
+
+    // 单机积分结算：每说出一个安全词/句 +5，幸存额外 +15
+    if (!this.netMode) {
+      const myCount = s.history.filter(h => h.seatId === this.localSeatId).length;
+      const survived = loserId && loserId !== this.localSeatId;
+      const gain = myCount * 5 + (survived ? 15 : 0);
+      const rec = Scores.addResult(s.kind === 'word' ? 'bomb-word' : 'bomb-poem', gain);
+      this.updateHighs();
+      detail.innerHTML += `<div class="rc-over-high">本局积分 +${gain}` +
+        (rec.isNewHigh && gain > 0 ? ` · 新纪录！个人最高分 ${rec.high} 分` : '') + '</div>';
     }
 
     // 按钮
@@ -769,12 +916,12 @@ const App = {
       const el = document.createElement('div');
       el.className = 'lobby-player' + (s.id === 'host' ? ' host' : '') + (s.isAI ? ' ai' : '');
       el.innerHTML = `<span class="lobby-player-name">${s.name}</span>
-        ${s.isAI ? '<span class="seat-tag">AI</span>' : ''}
+        ${s.isAI ? '<span class="seat-tag">小诗AI</span>' : ''}
         ${s.id === 'host' ? '<span class="seat-tag host-tag">房主</span>' : ''}`;
       box.appendChild(el);
     });
     if (role === 'host') {
-      document.getElementById('ai-count-label').textContent = `AI 玩家：${this.host.aiCount}`;
+      document.getElementById('ai-count-label').textContent = `小诗AI ×${this.host.aiCount}`;
       const btn = document.getElementById('btn-lobby-start');
       btn.disabled = seats.length < 2;
       btn.textContent = seats.length >= 2 ? '开 始 游 戏' : '开 始（至少 2 人）';
@@ -911,10 +1058,251 @@ const App = {
       `<span class="daily-mark ${ok ? 'ok' : 'wrong'}">${ok ? '✓' : '✗'} ${scoreText[i]}</span>`
     ).join(' ');
     document.getElementById('daily-score').innerHTML = `答对 ${r.score}/3 · ${html}`;
+    // 每日挑战积分：每答对一项 +5
+    const rec = Scores.addResult('daily-challenge', r.score * 5);
+    this.updateHighs();
+    if (rec.isNewHigh && r.score > 0) {
+      document.getElementById('daily-score').innerHTML +=
+        ` <span class="result-newhigh">· 新纪录 ${rec.high} 分！</span>`;
+    }
     document.getElementById('daily-poem-title').textContent = r.poem.t;
     document.getElementById('daily-poem-meta').textContent = `${r.poem.a}（${r.poem.d}）· ${r.poem.type} · ${r.poem.s}`;
     document.getElementById('daily-poem-lines').innerHTML =
       r.poem.lines.map(l => `<div class="daily-line">${l}</div>`).join('');
+  },
+
+  // ================================================================
+  // 生僻字
+  // ================================================================
+  rareCat: 'surname',
+  rarePlayMode: 'choice',
+  rareRounds: 5,
+  rareGame: null,
+  rareLocked: false,
+
+  openRare() {
+    this.rareGame = null;
+    this.show('screen-rare-chars');
+    document.getElementById('rc-setup').style.display = 'flex';
+    document.getElementById('rc-play').style.display = 'none';
+    document.getElementById('rc-over').style.display = 'none';
+    document.getElementById('rc-mode-tip').style.display = this.rareRounds === 0 ? 'block' : 'none';
+  },
+
+  startRare() {
+    this.rareGame = new RareCharsGame(this.rareCat, this.rarePlayMode, this.rareRounds);
+    this.rareLocked = false;
+    document.getElementById('rc-setup').style.display = 'none';
+    document.getElementById('rc-over').style.display = 'none';
+    document.getElementById('rc-play').style.display = 'flex';
+    const hintBtn = document.getElementById('btn-rc-hint');
+    hintBtn.textContent = '提示 ×3';
+    hintBtn.disabled = false;
+    document.getElementById('btn-rc-finish').style.display = this.rareRounds === 0 ? '' : 'none';
+    document.getElementById('rc-input').value = '';
+    this.renderRareQuestion();
+  },
+
+  renderRareQuestion() {
+    const g = this.rareGame;
+    if (!g || g.gameOver) return;
+    const item = g.current();
+
+    // 进度与得分
+    const prog = g.rounds > 0
+      ? `第 ${g.answered + 1} / ${g.rounds} 题`
+      : `已连对 ${g.correct} 题`;
+    document.getElementById('rc-progress').textContent = prog;
+    document.getElementById('rc-score').textContent = `得分 ${g.score}`;
+
+    // 题干：考查字高亮
+    const wordEl = document.getElementById('rc-word');
+    if (item.w === item.t) {
+      wordEl.textContent = item.w;
+    } else {
+      wordEl.innerHTML = this.escapeHtml(item.w).replace(
+        this.escapeHtml(item.t),
+        `<span class="rc-target">${this.escapeHtml(item.t)}</span>`);
+    }
+    document.getElementById('rc-qtext').textContent = item.cat === 'surname'
+      ? `「${item.t}」作姓氏时的读音是？`
+      : `「${item.w}」中「${item.t}」的读音是？`;
+
+    // 反馈清空
+    const fb = document.getElementById('rc-feedback');
+    fb.textContent = '';
+    fb.className = 'rc-feedback';
+
+    // 作答区
+    const optsBox = document.getElementById('rc-options');
+    const fillRow = document.getElementById('rc-fill-row');
+    if (g.playMode === 'choice') {
+      optsBox.style.display = 'grid';
+      fillRow.style.display = 'none';
+      optsBox.innerHTML = '';
+      this.shuffleArr(item.opts.slice()).forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'rc-option';
+        btn.textContent = opt;
+        btn.addEventListener('click', () => this.rareSubmitChoice(opt, btn));
+        optsBox.appendChild(btn);
+      });
+    } else {
+      optsBox.style.display = 'none';
+      fillRow.style.display = 'flex';
+      const input = document.getElementById('rc-input');
+      input.value = '';
+      input.focus();
+    }
+    this.rareLocked = false;
+  },
+
+  shuffleArr(a) {
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  },
+
+  rareSubmitChoice(opt, btn) {
+    if (!this.rareGame || this.rareLocked) return;
+    this.rareLocked = true;
+    const r = this.rareGame.answer(opt);
+    // 标记对错
+    document.querySelectorAll('.rc-option').forEach(b => {
+      b.disabled = true;
+      if (b.textContent === r.item.py) b.classList.add('ok');
+      else if (b === btn && !r.ok) b.classList.add('wrong');
+    });
+    this.afterRareAnswer(r);
+  },
+
+  rareSubmitFill() {
+    if (!this.rareGame || this.rareLocked) return;
+    const input = document.getElementById('rc-input');
+    const val = (input.value || '').trim();
+    if (!val) { this.shake('rc-input'); return; }
+    this.rareLocked = true;
+    const r = this.rareGame.answer(val);
+    this.afterRareAnswer(r);
+  },
+
+  afterRareAnswer(r) {
+    const g = this.rareGame;
+    const fb = document.getElementById('rc-feedback');
+    if (r.ok) {
+      fb.className = 'rc-feedback ok';
+      fb.innerHTML = `✓ 正确，+${g.playMode === 'fill' ? 15 : 10} 分<span class="rc-note">${r.item.note || ''}</span>`;
+    } else {
+      fb.className = 'rc-feedback wrong';
+      fb.innerHTML = `✗ 正确读音：${r.item.py}<span class="rc-note">${r.item.note || ''}</span>`;
+    }
+    document.getElementById('rc-score').textContent = `得分 ${g.score}`;
+
+    if (r.gameOver) {
+      setTimeout(() => this.showRareOver(), 1400);
+    } else {
+      setTimeout(() => this.renderRareQuestion(), 1400);
+    }
+  },
+
+  rareHint() {
+    const g = this.rareGame;
+    if (!g || g.gameOver) return;
+    const btn = document.getElementById('btn-rc-hint');
+    const h = g.hint();
+    btn.textContent = g.hintsLeft > 0 ? `提示 ×${g.hintsLeft}` : '提示用尽';
+    if (g.hintsLeft <= 0) btn.disabled = true;
+    if (!h) return;
+    const fb = document.getElementById('rc-feedback');
+    if (h.kind === 'eliminate') {
+      document.querySelectorAll('.rc-option').forEach(b => {
+        if (h.options.includes(b.textContent)) b.disabled = true;
+      });
+      fb.className = 'rc-feedback';
+      fb.textContent = '提示：已排除两个错误选项';
+    } else {
+      fb.className = 'rc-feedback';
+      fb.textContent = `提示：${h.text}`;
+    }
+  },
+
+  showRareOver() {
+    const g = this.rareGame;
+    if (!g) return;
+    document.getElementById('rc-play').style.display = 'none';
+    document.getElementById('rc-over').style.display = 'flex';
+
+    const rec = Scores.addResult('rare-chars', g.score);
+    this.updateHighs();
+
+    const title = document.getElementById('rc-over-title');
+    if (g.rounds === 0) {
+      title.textContent = g.correct > 0 ? `连对 ${g.correct} 题！` : '挑战结束';
+    } else {
+      const ratio = g.correct / g.rounds;
+      title.textContent = ratio >= 0.8 ? '博闻强识！' : ratio >= 0.5 ? '略有小成' : '再接再厉';
+    }
+    document.getElementById('rc-over-score').innerHTML =
+      `答对 ${g.correct} / ${g.answered} 题 · 得分 ${g.score}`;
+    document.getElementById('rc-over-high').textContent =
+      rec.isNewHigh && g.score > 0
+        ? `新纪录！个人最高分 ${rec.high} 分 · 总积分 ${rec.total}`
+        : `个人最高分 ${rec.high} 分 · 总积分 ${rec.total}`;
+
+    // 错题回顾
+    const box = document.getElementById('rc-review');
+    box.innerHTML = '';
+    g.records.forEach(r => {
+      const el = document.createElement('div');
+      el.className = 'rc-review-item ' + (r.ok ? 'ok' : 'wrong');
+      el.innerHTML = `<span class="rc-mark">${r.ok ? '✓' : '✗'}</span>` +
+        `<b>${r.item.w}</b>（${r.item.t}）读 <b>${r.item.py}</b>` +
+        (r.item.note ? `<div class="rc-review-note">${r.item.note}</div>` : '');
+      box.appendChild(el);
+    });
+  },
+
+  // ================================================================
+  // 我的（账号与积分）
+  // ================================================================
+  openMe() {
+    this.renderMe();
+    document.getElementById('me-modal').classList.add('active');
+  },
+
+  meLogin() {
+    const input = document.getElementById('me-name');
+    const name = (input.value || '').trim();
+    if (!name) { this.shake('me-name'); return; }
+    Scores.login(name);
+    input.value = '';
+    this.renderMe();
+    this.updateStats();
+  },
+
+  renderMe() {
+    const p = Scores.getProfile();
+    const logged = !!p.name;
+    document.getElementById('me-login').style.display = logged ? 'none' : 'block';
+    document.getElementById('me-profile').style.display = logged ? 'flex' : 'none';
+    if (logged) {
+      document.getElementById('me-avatar').textContent = p.name[0];
+      document.getElementById('me-name-show').textContent = p.name;
+      document.getElementById('me-total').textContent = p.total;
+    } else {
+      document.getElementById('me-total-guest').textContent = p.total;
+    }
+    // 各玩法最高分
+    const box = document.getElementById('me-highs-list');
+    box.innerHTML = '';
+    Object.keys(Scores.MODE_NAMES).forEach(mode => {
+      const row = document.createElement('div');
+      row.className = 'me-high-row';
+      row.innerHTML = `<span>${Scores.MODE_NAMES[mode]}</span><b>${Scores.getHigh(mode)} 分</b>`;
+      box.appendChild(row);
+    });
   },
 
   // ================================================================

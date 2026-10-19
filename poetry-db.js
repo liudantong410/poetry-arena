@@ -799,6 +799,25 @@ const POETRY_DB = [
 ];
 
 /**
+ * 合并扩展库（唐诗三百首 / 宋词 / 历代名句），按 标题+作者 去重
+ */
+(function mergeExtraLibs() {
+  const extras = [
+    window.POETRY_EXTRA_TANG,
+    window.POETRY_EXTRA_SONGCI,
+    window.POETRY_EXTRA_CLASSIC
+  ];
+  const seen = new Set(POETRY_DB.map(p => p.t + '|' + p.a));
+  for (const list of extras) {
+    if (!Array.isArray(list)) continue;
+    for (const p of list) {
+      const key = p.t + '|' + p.a;
+      if (!seen.has(key)) { seen.add(key); POETRY_DB.push(p); }
+    }
+  }
+})();
+
+/**
  * 数据库工具函数
  */
 const DB = {
