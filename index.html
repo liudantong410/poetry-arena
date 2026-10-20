@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -6,9 +6,9 @@
   <meta name="description" content="诗阵 — 面向资深诗词爱好者的纯诗词高难度挑战网页游戏">
   <meta name="theme-color" content="#2b3a42">
   <title>诗阵 · 诗词挑战</title>
-  <link rel="manifest" href="manifest.json?v=36">
+  <link rel="manifest" href="manifest.json?v=41">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' fill='%23c41e3a'>诗</text></svg>">
-  <link rel="stylesheet" href="style.css?v=36">
+  <link rel="stylesheet" href="style.css?v=41">
 </head>
 <body>
 
@@ -336,7 +336,7 @@
       <!-- 滚动态 -->
       <div class="daily-scroll" id="daily-scroll" style="display:none;">
         <div class="daily-scroll-label">诗句滚动中…</div>
-        <div class="daily-scroll-frame">
+        <div class="daily-scroll-frame" id="daily-scroll-frame">
           <div class="daily-scroll-band"></div>
           <div class="daily-scroll-track" id="daily-scroll-track"></div>
         </div>
@@ -600,23 +600,23 @@
 </div>
 
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-<script src="scores.js?v=36"></script>
-<script src="rare-chars-db.js?v=36"></script>
-<script src="rare-chars.js?v=36"></script>
-<script src="poetry-extra-tang.js?v=36"></script>
-<script src="poetry-extra-songci.js?v=36"></script>
-<script src="poetry-extra-classic.js?v=36"></script>
-<script src="poetry-db.js?v=36"></script>
-<script src="fly-flower.js?v=36"></script>
-<script src="chain.js?v=36"></script>
-<script src="idiom-db.js?v=36"></script>
-<script src="idiom-chain.js?v=36"></script>
-<script src="word-bank.js?v=36"></script>
-<script src="bomb.js?v=36"></script>
-<script src="bomb-online.js?v=36"></script>
-<script src="daily-challenge.js?v=36"></script>
-<script src="name-generator.js?v=36"></script>
-<script src="app.js?v=36"></script>
+<script src="scores.js?v=41"></script>
+<script src="rare-chars-db.js?v=41"></script>
+<script src="rare-chars.js?v=41"></script>
+<script src="poetry-extra-tang.js?v=41"></script>
+<script src="poetry-extra-songci.js?v=41"></script>
+<script src="poetry-extra-classic.js?v=41"></script>
+<script src="poetry-db.js?v=41"></script>
+<script src="fly-flower.js?v=41"></script>
+<script src="chain.js?v=41"></script>
+<script src="idiom-db.js?v=41"></script>
+<script src="idiom-chain.js?v=41"></script>
+<script src="word-bank.js?v=41"></script>
+<script src="bomb.js?v=41"></script>
+<script src="bomb-online.js?v=41"></script>
+<script src="daily-challenge.js?v=41"></script>
+<script src="name-generator.js?v=41"></script>
+<script src="app.js?v=41"></script>
 <script>
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
     navigator.serviceWorker.register('sw.js').catch(() => {});

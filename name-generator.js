@@ -112,6 +112,15 @@ function isGoodChar(ch) {
   return /[\u4e00-\u9fa5]/.test(ch) && !STOP_SET.has(ch);
 }
 
+/* 经典可叠用好字（诗词中常见且语义优美的叠字） */
+const REDUP_CHARS = '依霏悠茫萧潺涓袅绵芊茸欣苒菁萋沧泠凛澹澹滟滟绰约婉嫣娉婷窈逸翩跹迢皓皎澄澈煦熹晗曙';
+const REDUP_SET = new Set(toCharArr(REDUP_CHARS));
+
+/** 叠字质量判定：必须是意象字 / 经典叠字 / 主题字，避免"寸寸""情情"类生硬组合 */
+function isGoodDup(ch, themeSet) {
+  return IMAGE_SET.has(ch) || REDUP_SET.has(ch) || (themeSet && themeSet.has(ch));
+}
+
 /** 给片段打分：意象字+主题字加分，虚词淘汰 */
 function scoreFragment(frag, themeSet) {
   let score = 0;
@@ -248,6 +257,56 @@ class NameGenerator {
     return toCharArr(line).filter(isGoodChar);
   }
 
+  /* ---------- AABB：同诗内两句各取一个叠字（如"依依霏霏"出自《采薇》） ---------- */
+  generateAABB() {
+    // 不按主题过滤行（会把"杨柳依依"这类无主题字的叠字句饿死），叠字质量本身已是门槛
+    const allPoems = (typeof POETRY_DB !== 'undefined') ? POETRY_DB : [];
+    const byPoem = new Map();
+    for (const poem of allPoems) {
+      if (this.source && sourceOfPoem(poem) !== this.source) continue;
+      const entries = [];
+      for (const line of (poem.lines || [])) {
+        const chars = this.extractCharsFromLine(line);
+        const cnt = {};
+        for (const ch of chars) cnt[ch] = (cnt[ch] || 0) + 1;
+        const dups = [...new Set(chars.filter(ch => cnt[ch] >= 2 && isGoodDup(ch, this.themeSet)))];
+        if (dups.length === 0) continue;
+        let hit = 0;
+        for (const ch of chars) if (this.themeSet.has(ch)) hit++;
+        entries.push({ line, dups, hit });
+      }
+      if (entries.length > 0) byPoem.set(poem, entries);
+    }
+    const out = [];
+    for (const [poem, entries] of byPoem) {
+      // 同句双叠字
+      for (const e of entries) {
+        if (e.dups.length >= 2) {
+          for (let i = 0; i < e.dups.length; i++)
+            for (let j = i + 1; j < e.dups.length; j++) {
+              const name = e.dups[i] + e.dups[i] + e.dups[j] + e.dups[j];
+              out.push({ name, line: e.line, poem, hit: e.hit, score: scoreFragment(name, this.themeSet) + e.hit });
+            }
+        }
+      }
+      // 同诗跨句各取一个叠字
+      for (let i = 0; i < entries.length; i++)
+        for (let j = i + 1; j < entries.length; j++)
+          for (const a of entries[i].dups)
+            for (const b of entries[j].dups) {
+              if (a === b) continue;
+              const name = a + a + b + b;
+              const hit = entries[i].hit + entries[j].hit;
+              out.push({
+                name,
+                line: entries[i].line + '，' + entries[j].line,
+                poem, hit, score: scoreFragment(name, this.themeSet) + hit
+              });
+            }
+    }
+    return out;
+  }
+
   /* ---------- 按格式生成候选 ---------- */
   generateByFormat() {
     const L = this.length;
@@ -279,7 +338,7 @@ class NameGenerator {
         // AA：同句中同一字出现两次
         const cnt = {};
         for (const ch of chars) cnt[ch] = (cnt[ch] || 0) + 1;
-        for (const ch of chars) if (cnt[ch] >= 2) candidates.push({ name: ch + ch, line, poem, hit });
+        for (const ch of chars) if (cnt[ch] >= 2 && isGoodDup(ch, this.themeSet)) candidates.push({ name: ch + ch, line, poem, hit });
       } else if (fmt === 'ABC' && L === 3) {
         for (let i = 0; i < chars.length; i++)
           for (let j = i + 1; j < chars.length; j++)
@@ -289,7 +348,7 @@ class NameGenerator {
         const cnt = {};
         for (const ch of chars) cnt[ch] = (cnt[ch] || 0) + 1;
         for (const b of chars) {
-          if (cnt[b] >= 2) {
+          if (cnt[b] >= 2 && isGoodDup(b, this.themeSet)) {
             for (const a of chars) {
               if (a !== b) candidates.push({ name: a + b + b, line, poem, hit });
             }
@@ -301,7 +360,7 @@ class NameGenerator {
           const cnt2 = {};
           for (const ch of nextChars) cnt2[ch] = (cnt2[ch] || 0) + 1;
           for (const b of nextChars) {
-            if (cnt2[b] >= 2) {
+            if (cnt2[b] >= 2 && isGoodDup(b, this.themeSet)) {
               for (const a of chars) candidates.push({ name: a + b + b, line: line + '，' + nextLine, poem, hit });
             }
           }
@@ -310,7 +369,7 @@ class NameGenerator {
         const cnt = {};
         for (const ch of chars) cnt[ch] = (cnt[ch] || 0) + 1;
         for (const a of chars) {
-          if (cnt[a] >= 2) {
+          if (cnt[a] >= 2 && isGoodDup(a, this.themeSet)) {
             for (const b of chars) {
               if (b !== a) candidates.push({ name: a + a + b, line, poem, hit });
             }
@@ -342,18 +401,20 @@ class NameGenerator {
       } else if (fmt === 'AABB' && L === 4) {
         const cnt = {};
         for (const ch of chars) cnt[ch] = (cnt[ch] || 0) + 1;
-        const dup = chars.filter(ch => cnt[ch] >= 2);
+        const dup = chars.filter(ch => cnt[ch] >= 2 && isGoodDup(ch, this.themeSet));
         if (dup.length >= 2) {
-          for (let i = 0; i < dup.length; i++)
-            for (let j = i + 1; j < dup.length; j++)
-              candidates.push({ name: dup[i] + dup[i] + dup[j] + dup[j], line, poem, hit });
+          const uniq = [...new Set(dup)];
+          for (let i = 0; i < uniq.length; i++)
+            for (let j = i + 1; j < uniq.length; j++) {
+              candidates.push({ name: uniq[i] + uniq[i] + uniq[j] + uniq[j], line, poem, hit });
+            }
         }
         // 上下句各贡献一个叠字
         if (nextLine) {
           const nextChars = this.extractCharsFromLine(nextLine);
           const cnt2 = {};
           for (const ch of nextChars) cnt2[ch] = (cnt2[ch] || 0) + 1;
-          const dup2 = nextChars.filter(ch => cnt2[ch] >= 2);
+          const dup2 = nextChars.filter(ch => cnt2[ch] >= 2 && isGoodDup(ch, this.themeSet));
           for (const a of dup)
             for (const b of dup2)
               if (a !== b) candidates.push({ name: a + a + b + b, line: line + '，' + nextLine, poem, hit });
@@ -362,7 +423,7 @@ class NameGenerator {
         const cnt = {};
         for (const ch of chars) cnt[ch] = (cnt[ch] || 0) + 1;
         for (const a of chars) {
-          if (cnt[a] >= 2) {
+          if (cnt[a] >= 2 && isGoodDup(a, this.themeSet)) {
             const others = chars.filter(c => c !== a);
             for (let i = 0; i < others.length; i++)
               for (let j = i + 1; j < others.length; j++)
@@ -405,9 +466,8 @@ class NameGenerator {
       const list = REFERENCE_NAMES[this.source];
       for (const item of list) {
         if (this.length && item.name.length !== this.length) continue;
-        const sc = scoreFragment(item.name, this.themeSet);
-        if (sc <= 0) continue;
-        out.push({ name: item.name, line: item.line, poem: { t: item.from, a: '', d: '' }, hit: 1, score: sc + 2 });
+        // 典籍名字直接给高分，不筛意象字（这些名字本身就很经典）
+        out.push({ name: item.name, line: item.line, poem: { t: item.from, a: '', d: '' }, hit: 1, score: 10 + Math.random() });
       }
     }
     return out;
@@ -427,6 +487,8 @@ class NameGenerator {
     let cands = [];
     if (this.source === 'idiom' || REFERENCE_NAMES[this.source]) {
       cands = this.generateReference();
+    } else if (this.format === 'AABB') {
+      cands = this.generateAABB();
     } else {
       cands = this.generateByFormat();
     }
