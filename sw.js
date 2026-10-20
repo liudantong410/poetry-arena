@@ -1,26 +1,26 @@
 // 诗阵 Service Worker - 离线缓存
-const CACHE_NAME = 'poetry-arena-v31';
+const CACHE_NAME = 'poetry-arena-v32';
 const ASSETS = [
   './',
   './index.html',
-  './style.css?v=31',
-  './scores.js?v=31',
-  './rare-chars-db.js?v=31',
-  './rare-chars.js?v=31',
-  './poetry-extra-tang.js?v=31',
-  './poetry-extra-songci.js?v=31',
-  './poetry-extra-classic.js?v=31',
-  './poetry-db.js?v=31',
-  './fly-flower.js?v=31',
-  './chain.js?v=31',
-  './idiom-db.js?v=31',
-  './idiom-chain.js?v=31',
-  './word-bank.js?v=31',
-  './bomb.js?v=31',
-  './bomb-online.js?v=31',
-  './daily-challenge.js?v=31',
-  './app.js?v=31',
-  './manifest.json?v=31'
+  './style.css?v=32',
+  './scores.js?v=32',
+  './rare-chars-db.js?v=32',
+  './rare-chars.js?v=32',
+  './poetry-extra-tang.js?v=32',
+  './poetry-extra-songci.js?v=32',
+  './poetry-extra-classic.js?v=32',
+  './poetry-db.js?v=32',
+  './fly-flower.js?v=32',
+  './chain.js?v=32',
+  './idiom-db.js?v=32',
+  './idiom-chain.js?v=32',
+  './word-bank.js?v=32',
+  './bomb.js?v=32',
+  './bomb-online.js?v=32',
+  './daily-challenge.js?v=32',
+  './app.js?v=32',
+  './manifest.json?v=32'
 ];
 
 self.addEventListener('install', (e) => {

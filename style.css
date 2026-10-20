@@ -1390,8 +1390,9 @@ body {
   text-align: center;
 }
 .daily-scroll-item.final {
-  color: var(--enamel);
+  font-size: 28px;
   font-weight: 700;
+  color: var(--accent);
 }
 .daily-scroll-band {
   position: absolute;
@@ -1440,6 +1441,7 @@ body {
   100% { opacity: 1; transform: translateY(0); }
 }
 .daily-target-line {
+  font-family: var(--font-serif);
   font-size: 28px;
   font-weight: 700;
   color: var(--accent);
