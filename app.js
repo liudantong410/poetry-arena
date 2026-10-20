@@ -1012,6 +1012,7 @@ const App = {
     const track = document.getElementById('daily-scroll-track');
     track.innerHTML = '';
     track.style.transform = 'translateY(58px)';
+    track.style.transition = 'transform 0.16s linear';
     document.getElementById('daily-scroll-frame').classList.remove('scroll-to-top');
     document.getElementById('daily-quiz').classList.remove('fade-in');
 
@@ -1033,9 +1034,19 @@ const App = {
       const k = track.children.length - 1;
       track.style.transition = s.final ? 'transform .5s ease-out' : 'transform .16s linear';
       track.style.transform = `translateY(${(1 - k) * ROW}px)`;
+      // 记录定格时的位移，供答题态上移使用
+      if (s.final) {
+        this._dailyFinalY = (1 - k) * ROW;
+      }
     } else if (s.phase === 'quiz') {
-      // 平滑过渡：final 行滑到顶部 → 隐藏滚动框 → 淡入答题
+      // 平滑过渡：定格行从中间滑到顶部 + 框缩成一行 → 再淡入答题
       const frame = document.getElementById('daily-scroll-frame');
+      const track = document.getElementById('daily-scroll-track');
+      const ROW = 58;
+      // track 上移一行，让定格行从中间行滑到顶部行
+      track.style.transition = 'transform .6s ease-out';
+      track.style.transform = `translateY(${this._dailyFinalY - ROW}px)`;
+      // 框高度从 174px 缩到 58px，只露出顶部那行
       frame.classList.add('scroll-to-top');
       setTimeout(() => {
         document.getElementById('daily-scroll').style.display = 'none';

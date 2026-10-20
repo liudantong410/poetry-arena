@@ -1342,6 +1342,10 @@ body {
 .daily-scroll {
   padding: 36px 20px 60px;
   text-align: center;
+  /* 突破 subpage 的 640px 限制，让滚动框占满更宽的屏幕 */
+  width: 100vw;
+  max-width: 100vw;
+  margin-left: calc(50% - 50vw);
 }
 .daily-scroll-label {
   font-size: 14px;
@@ -1352,19 +1356,42 @@ body {
 .daily-scroll-frame {
   position: relative;
   height: 174px;               /* 3 行 × 58px */
-  max-width: 640px;            /* 加宽 */
+  width: min(880px, calc(100vw - 40px));  /* 固定宽度，不随内容变化 */
+  min-width: 320px;
   margin: 0 auto;
   overflow: hidden;
   border: 1.5px solid var(--enamel);
   border-radius: 14px;
   background: rgba(250,246,239,.92);
   box-shadow: 0 6px 20px var(--shadow);
-  transition: transform .6s ease-out, height .6s ease-out;
+  transition: height .6s ease-out;
 }
-/* 滚动结束 → 答题：定格行滑到顶部，框缩小 */
+/* 滚动结束 → 答题：定格行上移到顶部，框缩成一行 */
 .daily-scroll-frame.scroll-to-top {
-  transform: translateY(-132px);
   height: 58px;
+}
+.daily-scroll-frame.scroll-to-top .daily-scroll-band,
+.daily-scroll-frame.scroll-to-top::before,
+.daily-scroll-frame.scroll-to-top::after {
+  opacity: 0;
+  transition: opacity .3s;
+}
+.daily-scroll-item {
+  width: 100%;
+  height: 58px;
+  line-height: 58px;
+  font-family: var(--font-serif);
+  font-size: 21px;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  flex-shrink: 0;
+  padding: 0 20px;
+  box-sizing: border-box;
+  text-align: center;
+}
+.daily-scroll-item.final {
+  color: var(--enamel);
+  font-weight: 700;
 }
 .daily-scroll-band {
   position: absolute;
@@ -1375,6 +1402,7 @@ body {
   background: rgba(30,90,138,.06);
   pointer-events: none;
   z-index: 2;
+  transition: opacity .3s;
 }
 .daily-scroll-frame::before,
 .daily-scroll-frame::after {
@@ -1384,6 +1412,7 @@ body {
   height: 36px;
   z-index: 3;
   pointer-events: none;
+  transition: opacity .3s;
 }
 .daily-scroll-frame::before {
   top: 0;
@@ -1398,20 +1427,6 @@ body {
   flex-direction: column;
   transition: transform 0.16s linear;
   will-change: transform;
-}
-.daily-scroll-item {
-  height: 58px;
-  line-height: 58px;
-  font-family: var(--font-serif);
-  font-size: 21px;
-  color: var(--ink-soft);
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-.daily-scroll-item.final {
-  color: var(--enamel);
-  font-weight: 700;
-  animation: dailyLock .55s ease;
 }
 @keyframes dailyLock {
   0%   { transform: scale(1);    text-shadow: none; }
