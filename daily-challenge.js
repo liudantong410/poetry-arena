@@ -51,6 +51,19 @@ class DailyChallenge {
     }
     const i = pairIdx * 2;
     this.targetLine = this.poem.lines[i] + '，' + this.poem.lines[i + 1];
+
+    // 准备滚动用的整句池：所有诗的（出句+对句）组合，用于滚动时真筛选
+    if (!DailyChallenge._pairCache || DailyChallenge._pairCacheDate !== randomMode) {
+      DailyChallenge._pairCache = [];
+      for (const p of POETRY_DB) {
+        const n = Math.floor(p.lines.length / 2);
+        for (let k = 0; k < n; k++) {
+          DailyChallenge._pairCache.push(p.lines[k*2] + '，' + p.lines[k*2 + 1]);
+        }
+      }
+      DailyChallenge._pairCacheDate = randomMode;
+    }
+    this.allPairs = DailyChallenge._pairCache;
   }
 
   /** 生成选项：出处 2 选 1（大多数人不知道出处），题目/作者 4 选 1 */
@@ -92,18 +105,19 @@ class DailyChallenge {
     this.runScroll();
   }
 
-  /** 滚动动画：快速闪过随机诗句，逐步减速后定格 */
+  /** 滚动动画：快速闪过随机完整诗句对，逐步减速后定格 */
   runScroll() {
-    const allLines = DB.getAllLines();
+    const pool = this.allPairs || [];
+    if (!pool.length) return;
     let elapsed = 0;
     const totalDuration = 3000;  // 3 秒
     let interval = 50;
 
     const tick = () => {
       elapsed += interval;
-      // 随机展示一句
-      const randomLine = allLines[Math.floor(Math.random() * allLines.length)];
-      if (this.onPhaseChange) this.onPhaseChange({ phase: 'scrolling', displayLine: randomLine.line });
+      // 随机展示一整句（出句+对句）
+      const randomLine = pool[Math.floor(Math.random() * pool.length)];
+      if (this.onPhaseChange) this.onPhaseChange({ phase: 'scrolling', displayLine: randomLine });
 
       if (elapsed >= totalDuration) {
         // 先定格到目标句（滚动框中缝锁住本局诗句），停留片刻再进入答题
@@ -113,7 +127,7 @@ class DailyChallenge {
         this.scrollTimer = setTimeout(() => {
           this.phase = 'quiz';
           this.notify();
-        }, 1200);
+        }, 1400);
       } else {
         // 减速
         interval = Math.min(interval + 20, 250);

@@ -1352,13 +1352,19 @@ body {
 .daily-scroll-frame {
   position: relative;
   height: 174px;               /* 3 行 × 58px */
-  max-width: 480px;
+  max-width: 640px;            /* 加宽 */
   margin: 0 auto;
   overflow: hidden;
   border: 1.5px solid var(--enamel);
   border-radius: 14px;
   background: rgba(250,246,239,.92);
   box-shadow: 0 6px 20px var(--shadow);
+  transition: transform .6s ease-out, height .6s ease-out;
+}
+/* 滚动结束 → 答题：定格行滑到顶部，框缩小 */
+.daily-scroll-frame.scroll-to-top {
+  transform: translateY(-132px);
+  height: 58px;
 }
 .daily-scroll-band {
   position: absolute;
@@ -1412,10 +1418,11 @@ body {
   45%  { transform: scale(1.1);  text-shadow: 0 0 14px rgba(30,90,138,.45); }
   100% { transform: scale(1);    text-shadow: none; }
 }
-.daily-scroll-hint {
-  margin-top: 14px;
-  font-size: 13px;
-  color: var(--ink-soft);
+/* 答题面板淡入 */
+#screen-daily .quiz-panel { animation: quizFade .5s ease-out; }
+@keyframes quizFade {
+  0%   { opacity: 0; transform: translateY(18px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 .daily-target-line {
   font-size: 28px;

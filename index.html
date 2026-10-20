@@ -6,9 +6,9 @@
   <meta name="description" content="诗阵 — 面向资深诗词爱好者的纯诗词高难度挑战网页游戏">
   <meta name="theme-color" content="#2b3a42">
   <title>诗阵 · 诗词挑战</title>
-  <link rel="manifest" href="manifest.json?v=27">
+  <link rel="manifest" href="manifest.json?v=28">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' fill='%23c41e3a'>诗</text></svg>">
-  <link rel="stylesheet" href="style.css?v=27">
+  <link rel="stylesheet" href="style.css?v=28">
 </head>
 <body>
 
@@ -176,9 +176,9 @@
   <div class="start-area" id="start-area">
     <div class="round-selector">
       <div class="round-buttons">
-        <button class="round-btn active" data-rounds="0">无尽模式</button>
-        <button class="round-btn" data-rounds="5">5 回合</button>
-        <button class="round-btn" data-rounds="10">10 回合</button>
+        <button class="round-btn duel-round-btn active" data-rounds="0">无尽模式</button>
+        <button class="round-btn duel-round-btn" data-rounds="5">5 回合</button>
+        <button class="round-btn duel-round-btn" data-rounds="10">10 回合</button>
       </div>
     </div>
     <button id="btn-start" class="btn-start">开 始 对 阵</button>
@@ -283,10 +283,6 @@
         </div>
       </div>
 
-      <div class="history-area bomb-history">
-        <div class="history-list" id="bomb-history"></div>
-      </div>
-
       <div class="input-area" id="bomb-input-area" style="display:none;">
         <div class="input-hint" id="bomb-input-hint"></div>
         <div class="input-row">
@@ -295,6 +291,10 @@
           <button id="btn-bomb-hint" class="btn-hint">提示 ×3</button>
         </div>
         <div class="error-msg" id="bomb-error"></div>
+      </div>
+
+      <div class="history-area bomb-history">
+        <div class="history-list" id="bomb-history"></div>
       </div>
     </div>
 
@@ -331,7 +331,6 @@
           <div class="daily-scroll-band"></div>
           <div class="daily-scroll-track" id="daily-scroll-track"></div>
         </div>
-        <div class="daily-scroll-hint">中缝定格的那句，就是本局诗句</div>
       </div>
 
       <!-- 答题态 -->
@@ -420,8 +419,8 @@
       <div class="rc-group">
         <div class="section-label">玩法</div>
         <div class="round-buttons rc-play-buttons">
-          <button class="round-btn rc-play active" data-play="choice">选择</button>
-          <button class="round-btn rc-play" data-play="fill">填空</button>
+          <button class="round-btn rc-play-btn active" data-play="choice">选择</button>
+          <button class="round-btn rc-play-btn" data-play="fill">填空</button>
         </div>
       </div>
       <div class="rc-group">
@@ -534,22 +533,22 @@
 </div>
 
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-<script src="scores.js?v=27"></script>
-<script src="rare-chars-db.js?v=27"></script>
-<script src="rare-chars.js?v=27"></script>
-<script src="poetry-extra-tang.js?v=27"></script>
-<script src="poetry-extra-songci.js?v=27"></script>
-<script src="poetry-extra-classic.js?v=27"></script>
-<script src="poetry-db.js?v=27"></script>
-<script src="fly-flower.js?v=27"></script>
-<script src="chain.js?v=27"></script>
-<script src="idiom-db.js?v=27"></script>
-<script src="idiom-chain.js?v=27"></script>
-<script src="word-bank.js?v=27"></script>
-<script src="bomb.js?v=27"></script>
-<script src="bomb-online.js?v=27"></script>
-<script src="daily-challenge.js?v=27"></script>
-<script src="app.js?v=27"></script>
+<script src="scores.js?v=28"></script>
+<script src="rare-chars-db.js?v=28"></script>
+<script src="rare-chars.js?v=28"></script>
+<script src="poetry-extra-tang.js?v=28"></script>
+<script src="poetry-extra-songci.js?v=28"></script>
+<script src="poetry-extra-classic.js?v=28"></script>
+<script src="poetry-db.js?v=28"></script>
+<script src="fly-flower.js?v=28"></script>
+<script src="chain.js?v=28"></script>
+<script src="idiom-db.js?v=28"></script>
+<script src="idiom-chain.js?v=28"></script>
+<script src="word-bank.js?v=28"></script>
+<script src="bomb.js?v=28"></script>
+<script src="bomb-online.js?v=28"></script>
+<script src="daily-challenge.js?v=28"></script>
+<script src="app.js?v=28"></script>
 <script>
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
     navigator.serviceWorker.register('sw.js').catch(() => {});

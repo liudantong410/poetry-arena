@@ -87,11 +87,11 @@ const App = {
     // 飞花令/接龙
     document.getElementById('btn-start').addEventListener('click', () => this.startDuel());
     document.getElementById('btn-submit').addEventListener('click', () => this.duelSubmit());
-    // 局数选择
-    document.querySelectorAll('.round-btn').forEach(btn => {
+    // 局数选择（仅限飞花令/接龙，避免误伤生僻字按钮组）
+    document.querySelectorAll('.duel-round-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         this.duelMaxRounds = parseInt(btn.dataset.rounds, 10);
-        document.querySelectorAll('.round-btn').forEach(b =>
+        document.querySelectorAll('.duel-round-btn').forEach(b =>
           b.classList.toggle('active', b === btn));
       });
     });
@@ -161,10 +161,10 @@ const App = {
         document.querySelectorAll('.rc-cat').forEach(b => b.classList.toggle('active', b === btn));
       });
     });
-    document.querySelectorAll('.rc-play').forEach(btn => {
+    document.querySelectorAll('.rc-play-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         this.rarePlayMode = btn.dataset.play;
-        document.querySelectorAll('.rc-play').forEach(b => b.classList.toggle('active', b === btn));
+        document.querySelectorAll('.rc-play-btn').forEach(b => b.classList.toggle('active', b === btn));
       });
     });
     document.querySelectorAll('.rc-round').forEach(btn => {
@@ -561,7 +561,7 @@ const App = {
     if (kind === 'word') {
       rules.innerHTML = `
         <div class="bomb-rules-title">玩法</div>
-        <p>系统给出两字词的拼音首字母组合（如 <b>B+M</b>，即首字声母 <b>B</b> + 次字声母 <b>M</b>，如「保密 bǎomì」「报名 bàomíng」「避免 bìmiǎn」），本局从中抽出约 <b>12 个候选词</b>，其中暗藏<b>唯一一个炸弹词</b>。你与小诗AI<b>一对一</b>轮流说词，每人限说 <b>5 个</b>——<b>谁说出炸弹词谁输</b>，说完无人踩雷则平局并揭晓炸弹。小诗AI同样不知道炸弹是哪个。</p>`;
+        <p>系统给定一个<b>首字</b>（如「一」「天」「龙」），从以该字开头的成语中抽出约 <b>12 个候选</b>，其中暗藏<b>唯一一个炸弹词</b>。你与小诗AI<b>一对一</b>轮流说词，每人限说 <b>5 个</b>——<b>谁说出炸弹词谁输</b>，说完无人踩雷则平局并揭晓炸弹。小诗AI同样不知道炸弹是哪个。</p>`;
     } else {
       rules.innerHTML = `
         <div class="bomb-rules-title">玩法</div>
@@ -686,7 +686,7 @@ const App = {
     const main = document.getElementById('bomb-cue-main');
     const sub = document.getElementById('bomb-cue-sub');
     if (s.kind === 'word') {
-      label.textContent = '首字母';
+      label.textContent = '首字';
       main.textContent = s.round.code;
     } else {
       label.textContent = '关键字';
@@ -710,7 +710,7 @@ const App = {
       }
       document.getElementById('bomb-input-hint').textContent =
         s.kind === 'word'
-          ? `说一个首字母为 ${s.round.code} 的词`
+          ? `说一个以「${s.round.code}」开头的成语`
           : `说一句含"${s.round.char}"字的诗`;
     } else {
       inputArea.style.display = 'none';
@@ -770,7 +770,7 @@ const App = {
     const reveal = document.getElementById('bomb-reveal');
     const detail = document.getElementById('bomb-poem-detail');
     if (s.kind === 'word') {
-      reveal.innerHTML = `炸弹词是 <b>${s.bombWord}</b><br><span class="bomb-over-sub">首字母 ${s.round.code}</span>`;
+      reveal.innerHTML = `炸弹词是 <b>${s.bombWord}</b><br><span class="bomb-over-sub">首字「${s.round.code}」</span>`;
       detail.innerHTML = '';
     } else {
       reveal.innerHTML = `炸弹句是 <b>「${s.round.bombLine}」</b>`;
@@ -1003,15 +1003,17 @@ const App = {
     document.getElementById('daily-reveal').style.display = 'none';
   },
 
-  startDaily(randomMode = false) {
+  startDaily(randomMode = true) {
     document.getElementById('daily-intro').style.display = 'none';
     document.getElementById('daily-scroll').style.display = 'block';
     document.getElementById('daily-quiz').style.display = 'none';
     document.getElementById('daily-reveal').style.display = 'none';
-    // 清空滚动轨道
+    // 清空滚动轨道 + 重置过渡态
     const track = document.getElementById('daily-scroll-track');
     track.innerHTML = '';
     track.style.transform = 'translateY(58px)';
+    document.getElementById('daily-scroll-frame').classList.remove('scroll-to-top');
+    document.getElementById('daily-quiz').classList.remove('fade-in');
 
     this.dailyGame = new DailyChallenge();
     this.dailyGame.onPhaseChange = s => this.renderDaily(s);
@@ -1029,19 +1031,31 @@ const App = {
       track.appendChild(item);
       const ROW = 58;  // 与 .daily-scroll-item 行高一致
       const k = track.children.length - 1;
+      track.style.transition = s.final ? 'transform .5s ease-out' : 'transform .16s linear';
       track.style.transform = `translateY(${(1 - k) * ROW}px)`;
     } else if (s.phase === 'quiz') {
-      document.getElementById('daily-scroll').style.display = 'none';
-      document.getElementById('daily-quiz').style.display = 'block';
-      document.getElementById('daily-target-line').textContent = s.targetLine;
-      if (!s.options || !s.answers) {
-        console.error('[Daily] quiz 状态缺失字段:', { hasOptions: !!s.options, hasAnswers: !!s.answers, phase: s.phase, keys: Object.keys(s) });
-        return;
-      }
-      this.renderDailyOptions('title', s.options.title || [], s.answers.title);
-      this.renderDailyOptions('author', s.options.author || [], s.answers.author);
-      this.renderDailyOptions('source', s.options.source || [], s.answers.source);
+      // 平滑过渡：final 行滑到顶部 → 隐藏滚动框 → 淡入答题
+      const frame = document.getElementById('daily-scroll-frame');
+      frame.classList.add('scroll-to-top');
+      setTimeout(() => {
+        document.getElementById('daily-scroll').style.display = 'none';
+        const quiz = document.getElementById('daily-quiz');
+        quiz.style.display = 'block';
+        quiz.classList.add('fade-in');
+        this.renderDailyQuiz(s);
+      }, 600);
+    } else if (s.phase === 'revealed') {
+      document.getElementById('daily-quiz').style.display = 'none';
+      document.getElementById('daily-reveal').style.display = 'block';
     }
+  },
+
+  renderDailyQuiz(s) {
+    document.getElementById('daily-target-line').textContent = s.targetLine;
+    if (!s.options || !s.answers) return;
+    this.renderDailyOptions('title', s.options.title || [], s.answers.title);
+    this.renderDailyOptions('author', s.options.author || [], s.answers.author);
+    this.renderDailyOptions('source', s.options.source || [], s.answers.source);
   },
 
   renderDailyOptions(field, options, selected) {
