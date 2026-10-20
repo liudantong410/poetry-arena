@@ -6,9 +6,9 @@
   <meta name="description" content="诗阵 — 面向资深诗词爱好者的纯诗词高难度挑战网页游戏">
   <meta name="theme-color" content="#2b3a42">
   <title>诗阵 · 诗词挑战</title>
-  <link rel="manifest" href="manifest.json?v=32">
+  <link rel="manifest" href="manifest.json?v=36">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' fill='%23c41e3a'>诗</text></svg>">
-  <link rel="stylesheet" href="style.css?v=32">
+  <link rel="stylesheet" href="style.css?v=36">
 </head>
 <body>
 
@@ -82,6 +82,15 @@
           <div class="mode-name"><span class="cat-chip cat-word">词</span>生僻字 <span class="tag-new">新</span></div>
           <div class="mode-desc">束作姓氏怎么读？花蛤的蛤、蛋挞的挞读几声？姓氏与日常易读错字挑战</div>
           <div class="mode-meta">选择 / 填空 · 5 回合 / 10 回合 / 无限连对</div>
+        </div>
+      </div>
+
+      <div class="mode-card" data-mode="naming">
+        <div class="mode-icon">名</div>
+        <div class="mode-info">
+          <div class="mode-name"><span class="cat-chip cat-poem">诗</span>诗情画意起名 <span class="tag-new">新</span></div>
+          <div class="mode-desc">从诗词意境中提取字库，选风格、定字数，一键生成六个有诗意的游戏名</div>
+          <div class="mode-meta">6 种风格 · 1-4 字 · 无限换一批</div>
         </div>
       </div>
     </div>
@@ -532,23 +541,82 @@
   </div>
 </div>
 
+<!-- ========== 诗情画意起名 ========== -->
+<div id="screen-naming" class="screen bg-rare">
+  <div class="subpage">
+    <div class="subpage-header">
+      <button class="icon-btn" id="btn-naming-back">← 返回</button>
+      <div class="game-title">诗情画意起名</div>
+    </div>
+
+    <!-- 设置态：用途 → (姓氏|游戏类型) → 风格 → 出处 → 字数 → 格式 -->
+    <div class="rc-setup" id="naming-setup">
+      <div class="rc-group">
+        <div class="section-label">用途</div>
+        <div class="round-buttons" id="naming-purpose-buttons"></div>
+      </div>
+
+      <div class="rc-group" id="ng-surname-group" style="display:none;">
+        <div class="section-label">姓氏</div>
+        <input type="text" class="mini-input" id="naming-surname" placeholder="请输入姓氏（如：李）" maxlength="2">
+      </div>
+
+      <div class="rc-group" id="ng-gametype-group" style="display:none;">
+        <div class="section-label">游戏类型</div>
+        <div class="round-buttons" id="naming-gametype-buttons"></div>
+      </div>
+
+      <div class="rc-group" id="ng-style-group" style="display:none;">
+        <div class="section-label">风格</div>
+        <div class="round-buttons" id="naming-style-buttons"></div>
+      </div>
+
+      <div class="rc-group" id="ng-source-group" style="display:none;">
+        <div class="section-label">出处</div>
+        <div class="round-buttons" id="naming-source-buttons"></div>
+      </div>
+
+      <div class="rc-group" id="ng-length-group" style="display:none;">
+        <div class="section-label">字数</div>
+        <div class="round-buttons" id="naming-length-buttons"></div>
+      </div>
+
+      <div class="rc-group" id="ng-format-group" style="display:none;">
+        <div class="section-label">名字格式</div>
+        <div class="round-buttons" id="naming-format-buttons"></div>
+      </div>
+    </div>
+
+    <!-- 结果态 -->
+    <div class="rc-game" id="naming-result" style="display:none;">
+      <div class="ng-tip" id="naming-result-tip"></div>
+      <div class="ng-list" id="naming-result-list"></div>
+      <div class="result-actions">
+        <button class="btn-primary" id="btn-naming-refresh">换一批</button>
+        <button class="btn-secondary" id="btn-naming-reselect">重新选择</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-<script src="scores.js?v=32"></script>
-<script src="rare-chars-db.js?v=32"></script>
-<script src="rare-chars.js?v=32"></script>
-<script src="poetry-extra-tang.js?v=32"></script>
-<script src="poetry-extra-songci.js?v=32"></script>
-<script src="poetry-extra-classic.js?v=32"></script>
-<script src="poetry-db.js?v=32"></script>
-<script src="fly-flower.js?v=32"></script>
-<script src="chain.js?v=32"></script>
-<script src="idiom-db.js?v=32"></script>
-<script src="idiom-chain.js?v=32"></script>
-<script src="word-bank.js?v=32"></script>
-<script src="bomb.js?v=32"></script>
-<script src="bomb-online.js?v=32"></script>
-<script src="daily-challenge.js?v=32"></script>
-<script src="app.js?v=32"></script>
+<script src="scores.js?v=36"></script>
+<script src="rare-chars-db.js?v=36"></script>
+<script src="rare-chars.js?v=36"></script>
+<script src="poetry-extra-tang.js?v=36"></script>
+<script src="poetry-extra-songci.js?v=36"></script>
+<script src="poetry-extra-classic.js?v=36"></script>
+<script src="poetry-db.js?v=36"></script>
+<script src="fly-flower.js?v=36"></script>
+<script src="chain.js?v=36"></script>
+<script src="idiom-db.js?v=36"></script>
+<script src="idiom-chain.js?v=36"></script>
+<script src="word-bank.js?v=36"></script>
+<script src="bomb.js?v=36"></script>
+<script src="bomb-online.js?v=36"></script>
+<script src="daily-challenge.js?v=36"></script>
+<script src="name-generator.js?v=36"></script>
+<script src="app.js?v=36"></script>
 <script>
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
     navigator.serviceWorker.register('sw.js').catch(() => {});

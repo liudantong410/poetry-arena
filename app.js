@@ -72,6 +72,7 @@ const App = {
         else if (mode === 'bomb-word-menu') this.show('screen-bomb-menu');
         else if (mode === 'daily-challenge') this.openDaily();
         else if (mode === 'rare-chars') this.openRare();
+        else if (mode === 'naming') this.openNaming();
       });
     });
 
@@ -208,7 +209,8 @@ const App = {
 
   updateStats() {
     const s = DB.getStats();
-    const wordCount = Object.values(WORD_BANK).reduce((n, arr) => n + arr.length, 0);
+    BombWords.ensureInit();
+    const wordCount = Object.values(BombWords._bank || {}).reduce((n, arr) => n + arr.length, 0);
     const el = document.getElementById('db-stats');
     if (el) el.textContent = `诗词库：${s.poems} 首 / ${s.lines} 句 · 炸弹词库：${wordCount} 词 · 成语库：${IdiomDB.getSize()} 条`;
     this.updateHighs();
@@ -1011,7 +1013,7 @@ const App = {
     // 清空滚动轨道 + 重置过渡态
     const track = document.getElementById('daily-scroll-track');
     track.innerHTML = '';
-    track.style.transform = 'translateY(58px)';
+    track.style.transform = 'translateY(36px)';
     track.style.transition = 'transform 0.16s linear';
     document.getElementById('daily-scroll-frame').classList.remove('scroll-to-top');
     document.getElementById('daily-quiz').classList.remove('fade-in');
@@ -1030,7 +1032,7 @@ const App = {
       item.className = 'daily-scroll-item' + (s.final ? ' final' : '');
       item.textContent = s.displayLine || '';
       track.appendChild(item);
-      const ROW = 58;  // 与 .daily-scroll-item 行高一致
+      const ROW = 36;  // 与 .daily-scroll-item 行高一致
       const k = track.children.length - 1;
       track.style.transition = s.final ? 'transform .5s ease-out' : 'transform .16s linear';
       track.style.transform = `translateY(${(1 - k) * ROW}px)`;
@@ -1042,11 +1044,11 @@ const App = {
       // 平滑过渡：定格行从中间滑到顶部 + 框缩成一行 → 再淡入答题
       const frame = document.getElementById('daily-scroll-frame');
       const track = document.getElementById('daily-scroll-track');
-      const ROW = 58;
+      const ROW = 36;
       // track 上移一行，让定格行从中间行滑到顶部行
       track.style.transition = 'transform .6s ease-out';
       track.style.transform = `translateY(${this._dailyFinalY - ROW}px)`;
-      // 框高度从 174px 缩到 58px，只露出顶部那行
+      // 框高度从 108px 缩到 36px，只露出顶部那行
       frame.classList.add('scroll-to-top');
       setTimeout(() => {
         document.getElementById('daily-scroll').style.display = 'none';
@@ -1123,6 +1125,220 @@ const App = {
     document.getElementById('rc-game').style.display = 'none';
     document.getElementById('rc-over').style.display = 'none';
     document.getElementById('rc-mode-tip').style.display = this.rareRounds === 0 ? 'block' : 'none';
+  },
+
+  // ============ 诗情画意起名 ============
+  openNaming() {
+    this.show('screen-naming');
+    this.namingGen = new NameGenerator();
+    this.namingPurpose = null;
+    this.namingGameType = null;
+    this.namingStyleId = null;
+    this.namingSourceId = null;
+    this.namingLength = null;
+    this.namingFormat = null;
+
+    // 1. 用途按钮
+    const pRow = document.getElementById('naming-purpose-buttons');
+    pRow.innerHTML = NAME_PURPOSES.map(p =>
+      `<button class="round-btn" data-purpose="${p.id}">${p.name}</button>`
+    ).join('');
+    pRow.querySelectorAll('.round-btn').forEach(btn => {
+      btn.addEventListener('click', () => this.namingPickPurpose(btn.dataset.purpose));
+    });
+
+    // 2. 游戏类型按钮
+    const gRow = document.getElementById('naming-gametype-buttons');
+    gRow.innerHTML = GAME_TYPES.map(g =>
+      `<button class="round-btn" data-gtype="${g.id}">${g.name}</button>`
+    ).join('');
+    gRow.querySelectorAll('.round-btn').forEach(btn => {
+      btn.addEventListener('click', () => this.namingPickGameType(btn.dataset.gtype));
+    });
+
+    // 3. 风格按钮
+    const sRow = document.getElementById('naming-style-buttons');
+    sRow.innerHTML = NAME_STYLES.map(s =>
+      `<button class="round-btn" data-style="${s.id}">${s.name}</button>`
+    ).join('');
+    sRow.querySelectorAll('.round-btn').forEach(btn => {
+      btn.addEventListener('click', () => this.namingPickStyle(btn.dataset.style));
+    });
+
+    // 4. 出处按钮（动态生成）
+    // 5. 字数按钮
+    const lenRow = document.getElementById('naming-length-buttons');
+    lenRow.innerHTML = [1, 2, 3, 4].map(n =>
+      `<button class="round-btn" data-len="${n}">${n} 字</button>`
+    ).join('');
+    lenRow.querySelectorAll('.round-btn').forEach(btn => {
+      btn.addEventListener('click', () => this.namingPickLength(parseInt(btn.dataset.len, 10)));
+    });
+
+    // 姓氏输入
+    document.getElementById('naming-surname').addEventListener('input', (e) => {
+      this.namingGen.setSurname(e.target.value);
+    });
+
+    // 态切换：只显示用途
+    this.namingShowStep('purpose');
+    document.getElementById('btn-naming-refresh').onclick = () => this.namingGenerate();
+    document.getElementById('btn-naming-reselect').onclick = () => this.openNaming();
+    document.getElementById('btn-naming-back').onclick = () => this.show('screen-home');
+  },
+
+  namingShowStep(step) {
+    // 先全部隐藏
+    ['ng-surname-group','ng-gametype-group','ng-style-group','ng-source-group','ng-length-group','ng-format-group']
+      .forEach(id => document.getElementById(id).style.display = 'none');
+    // 再按步骤显示
+    if (step === 'purpose') {
+      document.getElementById('naming-setup').style.display = 'flex';
+      document.getElementById('naming-result').style.display = 'none';
+    } else if (step === 'game') {
+      document.getElementById('ng-gametype-group').style.display = 'block';
+    } else if (step === 'baby') {
+      document.getElementById('ng-surname-group').style.display = 'block';
+    } else if (step === 'gametype') {
+      document.getElementById('ng-style-group').style.display = 'block';
+    } else if (step === 'style') {
+      document.getElementById('ng-style-group').style.display = 'block';
+      document.getElementById('ng-source-group').style.display = 'block';
+    } else if (step === 'source') {
+      document.getElementById('ng-length-group').style.display = 'block';
+    } else if (step === 'length') {
+      document.getElementById('ng-format-group').style.display = 'block';
+    }
+    // 滚动到最新显示的组
+    const visible = ['ng-surname-group','ng-gametype-group','ng-style-group','ng-source-group','ng-length-group','ng-format-group']
+      .map(id => document.getElementById(id))
+      .filter(el => el.style.display !== 'none');
+    if (visible.length) visible[visible.length - 1].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  },
+
+  namingPickPurpose(purpose) {
+    this.namingPurpose = purpose;
+    this.namingGen.setPurpose(purpose);
+    document.querySelectorAll('#naming-purpose-buttons .round-btn')
+      .forEach(b => b.classList.toggle('active', b.dataset.purpose === purpose));
+
+    if (purpose === 'game') {
+      this.namingShowStep('game');
+    } else {
+      this.namingShowStep('baby');
+      // 宝宝模式：姓氏输入后自动进入风格
+      setTimeout(() => this.namingShowStep('style'), 300);
+    }
+  },
+
+  namingPickGameType(gtype) {
+    this.namingGameType = gtype;
+    this.namingGen.setGameType(gtype);
+    document.querySelectorAll('#naming-gametype-buttons .round-btn')
+      .forEach(b => b.classList.toggle('active', b.dataset.gtype === gtype));
+    this.namingShowStep('gametype');
+    // 游戏ID模式：选完游戏类型后直接进入风格
+    setTimeout(() => this.namingShowStep('style'), 300);
+  },
+
+  namingPickStyle(styleId) {
+    this.namingStyleId = styleId;
+    this.namingGen.setStyle(styleId);
+    document.querySelectorAll('#naming-style-buttons .round-btn')
+      .forEach(b => b.classList.toggle('active', b.dataset.style === styleId));
+
+    // 渲染出处按钮（按用途排序）
+    const srcRow = document.getElementById('naming-source-buttons');
+    const sources = NameGenerator.getAvailableSources(this.namingPurpose);
+    srcRow.innerHTML = sources.map(s =>
+      `<button class="round-btn" data-source="${s.id}">${s.name}</button>`
+    ).join('');
+    srcRow.querySelectorAll('.round-btn').forEach(btn => {
+      btn.addEventListener('click', () => this.namingPickSource(btn.dataset.source));
+    });
+    document.querySelectorAll('#naming-source-buttons .round-btn').forEach(b => b.classList.remove('active'));
+
+    this.namingShowStep('style');
+  },
+
+  namingPickSource(sourceId) {
+    this.namingSourceId = sourceId;
+    this.namingGen.setSource(sourceId);
+    document.querySelectorAll('#naming-source-buttons .round-btn')
+      .forEach(b => b.classList.toggle('active', b.dataset.source === sourceId));
+    this.namingShowStep('source');
+  },
+
+  namingPickLength(len) {
+    this.namingLength = len;
+    this.namingGen.setLength(len);
+    document.querySelectorAll('#naming-length-buttons .round-btn')
+      .forEach(b => b.classList.toggle('active', parseInt(b.dataset.len, 10) === len));
+
+    // 渲染格式按钮
+    const fmtRow = document.getElementById('naming-format-buttons');
+    const formats = NameGenerator.getFormats(len);
+    fmtRow.innerHTML = formats.map(f =>
+      `<button class="round-btn" data-format="${f.id}" title="${f.example}">${f.label}</button>`
+    ).join('');
+    fmtRow.querySelectorAll('.round-btn').forEach(btn => {
+      btn.addEventListener('click', () => this.namingPickFormat(btn.dataset.format));
+    });
+    document.querySelectorAll('#naming-format-buttons .round-btn').forEach(b => b.classList.remove('active'));
+
+    this.namingShowStep('length');
+  },
+
+  namingPickFormat(fmt) {
+    this.namingFormat = fmt;
+    this.namingGen.setFormat(fmt);
+    document.querySelectorAll('#naming-format-buttons .round-btn')
+      .forEach(b => b.classList.toggle('active', b.dataset.format === fmt));
+    this.namingGenerate();
+  },
+
+  namingGenerate() {
+    const results = this.namingGen.generate(6);
+    const purposeName = this.namingPurpose === 'baby' ? '宝宝名' : '游戏ID';
+    const srcName = (NAME_SOURCES.find(s => s.id === this.namingSourceId) || {}).name || '';
+    const fmtLabel = this.namingFormat ? (NAME_FORMATS[this.namingLength] || []).find(f => f.id === this.namingFormat)?.label || '' : '';
+
+    document.getElementById('naming-setup').style.display = 'none';
+    document.getElementById('naming-result').style.display = 'flex';
+    const tip = document.getElementById('naming-result-tip');
+    tip.textContent = results.length
+      ? `${purposeName} · ${srcName} · ${this.namingLength}字 · ${fmtLabel} —— 均带出处`
+      : '这个组合下暂时没有合适的名字，请换个条件';
+
+    const list = document.getElementById('naming-result-list');
+    list.innerHTML = results.map(r => `
+      <div class="ng-card">
+        <div class="ng-card-main">
+          <div class="ng-name">${r.name}</div>
+          <button class="ng-copy" data-name="${r.name}">复制</button>
+        </div>
+        <div class="ng-from">—— ${r.dynasty ? r.dynasty + '·' : ''}${r.author || '佚名'}《${r.title}》</div>
+        <div class="ng-line">「${r.line}」</div>
+      </div>
+    `).join('');
+
+    list.querySelectorAll('.ng-copy').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const name = btn.dataset.name;
+        const input = document.createElement('input');
+        input.value = name;
+        input.style.position = 'fixed';
+        input.style.opacity = '0';
+        document.body.appendChild(input);
+        input.select();
+        let ok = false;
+        try { ok = document.execCommand('copy'); } catch (err) {}
+        document.body.removeChild(input);
+        btn.textContent = ok ? '已复制' : '复制失败';
+        setTimeout(() => btn.textContent = '复制', 1200);
+      });
+    });
   },
 
   startRare() {
