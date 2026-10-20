@@ -580,7 +580,7 @@ const App = {
     this.bombGame = new BombGame({
       kind: this.bombKind,
       seats,
-      timeLimit: this.bombKind === 'word' ? 30 : this.timeByDifficulty(),
+      timeLimit: this.timeByDifficulty(),
       maxWordsEach: 5
     });
     this.bindBombEngine(this.bombGame);
@@ -1017,6 +1017,7 @@ const App = {
     track.style.transition = 'transform 0.16s linear';
     document.getElementById('daily-scroll-frame').classList.remove('scroll-to-top');
     document.getElementById('daily-quiz').classList.remove('fade-in');
+    document.querySelector('#daily-scroll .daily-scroll-label').style.display = '';
 
     this.dailyGame = new DailyChallenge();
     this.dailyGame.onPhaseChange = s => this.renderDaily(s);
@@ -1041,7 +1042,7 @@ const App = {
         this._dailyFinalY = (1 - k) * ROW;
       }
     } else if (s.phase === 'quiz') {
-      // 平滑过渡：定格行从中间滑到顶部 + 框缩成一行 → 再淡入答题
+      // 平滑过渡：定格行从中间滑到顶部 + 框缩成一行，定格行持续留存在答题面板顶部
       const frame = document.getElementById('daily-scroll-frame');
       const track = document.getElementById('daily-scroll-track');
       const ROW = 36;
@@ -1050,8 +1051,9 @@ const App = {
       track.style.transform = `translateY(${this._dailyFinalY - ROW}px)`;
       // 框高度从 108px 缩到 36px，只露出顶部那行
       frame.classList.add('scroll-to-top');
+      // 隐藏"滚动中"标签，定格行落地为答题面板的一部分
+      document.querySelector('#daily-scroll .daily-scroll-label').style.display = 'none';
       setTimeout(() => {
-        document.getElementById('daily-scroll').style.display = 'none';
         const quiz = document.getElementById('daily-quiz');
         quiz.style.display = 'block';
         quiz.classList.add('fade-in');
@@ -1188,27 +1190,23 @@ const App = {
   },
 
   namingShowStep(step) {
-    // 先全部隐藏
-    ['ng-surname-group','ng-gametype-group','ng-style-group','ng-source-group','ng-length-group','ng-format-group']
-      .forEach(id => document.getElementById(id).style.display = 'none');
-    // 再按步骤显示
     if (step === 'purpose') {
       document.getElementById('naming-setup').style.display = 'flex';
       document.getElementById('naming-result').style.display = 'none';
-    } else if (step === 'game') {
-      document.getElementById('ng-gametype-group').style.display = 'block';
-    } else if (step === 'baby') {
-      document.getElementById('ng-surname-group').style.display = 'block';
-    } else if (step === 'gametype') {
-      document.getElementById('ng-style-group').style.display = 'block';
-    } else if (step === 'style') {
-      document.getElementById('ng-style-group').style.display = 'block';
-      document.getElementById('ng-source-group').style.display = 'block';
-    } else if (step === 'source') {
-      document.getElementById('ng-length-group').style.display = 'block';
-    } else if (step === 'length') {
-      document.getElementById('ng-format-group').style.display = 'block';
     }
+    // 累积式显示：选过的步骤留存，不消失
+    const rank = { purpose: 0, game: 1, baby: 1, gametype: 2, style: 3, source: 4, length: 5 }[step] ?? 0;
+    const show = new Set();
+    if (rank >= 1) {
+      if (this.namingPurpose === 'game') show.add('ng-gametype-group');
+      if (this.namingPurpose === 'baby') show.add('ng-surname-group');
+    }
+    if (rank >= 2) show.add('ng-style-group');
+    if (rank >= 3) show.add('ng-source-group');
+    if (rank >= 4) show.add('ng-length-group');
+    if (rank >= 5) show.add('ng-format-group');
+    ['ng-surname-group','ng-gametype-group','ng-style-group','ng-source-group','ng-length-group','ng-format-group']
+      .forEach(id => document.getElementById(id).style.display = show.has(id) ? 'block' : 'none');
     // 滚动到最新显示的组
     const visible = ['ng-surname-group','ng-gametype-group','ng-style-group','ng-source-group','ng-length-group','ng-format-group']
       .map(id => document.getElementById(id))
