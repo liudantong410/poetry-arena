@@ -979,8 +979,6 @@ body {
   margin-left: 6px;
   letter-spacing: 0;
 }
-.mode-icon.bomb { background: var(--seal); }
-
 /* ========== 子页面骨架 ========== */
 .subpage, .bomb-page {
   max-width: 640px;
@@ -1342,7 +1340,7 @@ body {
   margin-bottom: 32px;
 }
 .daily-scroll {
-  padding: 60px 20px;
+  padding: 36px 20px 60px;
   text-align: center;
 }
 .daily-scroll-label {
@@ -1350,13 +1348,74 @@ body {
   color: var(--ink-soft);
   margin-bottom: 20px;
 }
-.daily-scroll-line {
-  font-size: 32px;
+/* 滚动框：三行窗口 + 中缝定格带 */
+.daily-scroll-frame {
+  position: relative;
+  height: 174px;               /* 3 行 × 58px */
+  max-width: 480px;
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1.5px solid var(--enamel);
+  border-radius: 14px;
+  background: rgba(250,246,239,.92);
+  box-shadow: 0 6px 20px var(--shadow);
+}
+.daily-scroll-band {
+  position: absolute;
+  left: 0; right: 0;
+  top: 58px; height: 58px;
+  border-top: 1.5px dashed rgba(30,90,138,.45);
+  border-bottom: 1.5px dashed rgba(30,90,138,.45);
+  background: rgba(30,90,138,.06);
+  pointer-events: none;
+  z-index: 2;
+}
+.daily-scroll-frame::before,
+.daily-scroll-frame::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  height: 36px;
+  z-index: 3;
+  pointer-events: none;
+}
+.daily-scroll-frame::before {
+  top: 0;
+  background: linear-gradient(180deg, rgba(250,246,239,.96), rgba(250,246,239,0));
+}
+.daily-scroll-frame::after {
+  bottom: 0;
+  background: linear-gradient(0deg, rgba(250,246,239,.96), rgba(250,246,239,0));
+}
+.daily-scroll-track {
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.16s linear;
+  will-change: transform;
+}
+.daily-scroll-item {
+  height: 58px;
+  line-height: 58px;
+  font-family: var(--font-serif);
+  font-size: 21px;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.daily-scroll-item.final {
+  color: var(--enamel);
   font-weight: 700;
-  color: var(--accent);
-  min-height: 48px;
-  line-height: 1.4;
-  transition: opacity 0.05s;
+  animation: dailyLock .55s ease;
+}
+@keyframes dailyLock {
+  0%   { transform: scale(1);    text-shadow: none; }
+  45%  { transform: scale(1.1);  text-shadow: 0 0 14px rgba(30,90,138,.45); }
+  100% { transform: scale(1);    text-shadow: none; }
+}
+.daily-scroll-hint {
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--ink-soft);
 }
 .daily-target-line {
   font-size: 28px;
@@ -1538,9 +1597,27 @@ body {
 .mode-icon {
   background: linear-gradient(135deg, var(--dai) 0%, var(--enamel) 100%);
 }
-.mode-icon.bomb {
-  background: linear-gradient(135deg, var(--seal-dark) 0%, var(--seal) 100%);
+/* 词语类玩法：苔绿圆框 */
+.mode-icon.word {
+  background: linear-gradient(135deg, #3f5340 0%, var(--moss) 100%);
 }
+.mode-card.word::before { background: var(--moss); }
+.mode-card.word:hover { border-color: var(--moss); }
+
+/* 类别徽标：诗=蓝 / 词=绿 */
+.cat-chip {
+  display: inline-block;
+  font-family: "ChunFengKai","YouRanXiaoKai","STKaiti","华文楷体","KaiTi","楷体",serif;
+  font-size: 12px;
+  line-height: 1;
+  padding: 3px 6px 4px;
+  border-radius: 4px;
+  color: #f5f0e8;
+  vertical-align: 3px;
+  margin-right: 6px;
+}
+.cat-chip.cat-poem { background: var(--enamel); }
+.cat-chip.cat-word { background: var(--moss); }
 
 /* 飞花令关键字换成珐琅蓝 */
 .ff-target-char {
@@ -1853,7 +1930,7 @@ html.has-scenery .subpage-header {
 }
 .rc-rules p { margin: 6px 0 0; }
 
-.rc-play {
+.rc-game {
   display: flex;
   flex-direction: column;
   align-items: center;

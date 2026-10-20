@@ -6,9 +6,9 @@
   <meta name="description" content="诗阵 — 面向资深诗词爱好者的纯诗词高难度挑战网页游戏">
   <meta name="theme-color" content="#2b3a42">
   <title>诗阵 · 诗词挑战</title>
-  <link rel="manifest" href="manifest.json?v=26">
+  <link rel="manifest" href="manifest.json?v=27">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' fill='%23c41e3a'>诗</text></svg>">
-  <link rel="stylesheet" href="style.css?v=26">
+  <link rel="stylesheet" href="style.css?v=27">
 </head>
 <body>
 
@@ -25,7 +25,7 @@
       <div class="mode-card" data-mode="daily-challenge">
         <div class="mode-icon">醒</div>
         <div class="mode-info">
-          <div class="mode-name">每日诗词挑战 <span class="tag-new">新</span></div>
+          <div class="mode-name"><span class="cat-chip cat-poem">诗</span>每日诗词挑战 <span class="tag-new">新</span></div>
           <div class="mode-desc">一键唤醒，诗句飞速滚动定格一句，猜题目、作者与出处</div>
           <div class="mode-meta">随机诗篇 · 全选揭晓全诗 · 可无限再来</div>
         </div>
@@ -34,7 +34,7 @@
       <div class="mode-card" data-mode="fly-flower">
         <div class="mode-icon">飞</div>
         <div class="mode-info">
-          <div class="mode-name">飞花令 · 小诗AI擂台</div>
+          <div class="mode-name"><span class="cat-chip cat-poem">诗</span>飞花令 · 小诗AI擂台</div>
           <div class="mode-desc">与小诗AI轮流说出含指定关键字的诗句，接不出者负</div>
           <div class="mode-meta">3-6 分钟 · 单人 vs 小诗AI</div>
         </div>
@@ -43,43 +43,43 @@
       <div class="mode-card" data-mode="chain">
         <div class="mode-icon">龙</div>
         <div class="mode-info">
-          <div class="mode-name">接龙 · 小诗AI对战</div>
+          <div class="mode-name"><span class="cat-chip cat-poem">诗</span>接龙 · 小诗AI对战</div>
           <div class="mode-desc">上句末字即下句首字，用冷门句堵死小诗AI</div>
           <div class="mode-meta">2-5 分钟 · 单人 vs 小诗AI</div>
         </div>
       </div>
 
-      <div class="mode-card" data-mode="idiom-chain">
-        <div class="mode-icon">成</div>
+      <div class="mode-card word" data-mode="idiom-chain">
+        <div class="mode-icon word">成</div>
         <div class="mode-info">
-          <div class="mode-name">成语接龙 · 小诗AI对战</div>
+          <div class="mode-name"><span class="cat-chip cat-word">词</span>成语接龙 · 小诗AI对战</div>
           <div class="mode-desc">顶针格接龙，上句末字即下句首字，接不出者负</div>
           <div class="mode-meta">2-5 分钟 · 单人 vs 小诗AI</div>
         </div>
       </div>
 
       <div class="mode-card" data-mode="bomb-poem">
-        <div class="mode-icon bomb">雷</div>
+        <div class="mode-icon">雷</div>
         <div class="mode-info">
-          <div class="mode-name">诗词炸弹 <span class="tag-new">新</span></div>
+          <div class="mode-name"><span class="cat-chip cat-poem">诗</span>诗词炸弹 <span class="tag-new">新</span></div>
           <div class="mode-desc">含关键字的诗句中藏了一句"炸弹"，谁说出谁炸</div>
           <div class="mode-meta">2-3 分钟 · 与小诗AI 一对一轮坐</div>
         </div>
       </div>
 
-      <div class="mode-card" data-mode="bomb-word-menu">
-        <div class="mode-icon bomb">弹</div>
+      <div class="mode-card word" data-mode="bomb-word-menu">
+        <div class="mode-icon word">弹</div>
         <div class="mode-info">
-          <div class="mode-name">词语炸弹 <span class="tag-new">新</span></div>
-          <div class="mode-desc">给定拼音首字母（如 B+M），符合的词中藏一个炸弹词，踩中者输</div>
+          <div class="mode-name"><span class="cat-chip cat-word">词</span>词语炸弹 <span class="tag-new">新</span></div>
+          <div class="mode-desc">给定拼音首字母，符合的词中藏一个炸弹词，踩中者输</div>
           <div class="mode-meta">2-5 分钟 · 单人 / 2-8 人联机</div>
         </div>
       </div>
 
-      <div class="mode-card" data-mode="rare-chars">
-        <div class="mode-icon">僻</div>
+      <div class="mode-card word" data-mode="rare-chars">
+        <div class="mode-icon word">僻</div>
         <div class="mode-info">
-          <div class="mode-name">生僻字 <span class="tag-new">新</span></div>
+          <div class="mode-name"><span class="cat-chip cat-word">词</span>生僻字 <span class="tag-new">新</span></div>
           <div class="mode-desc">束作姓氏怎么读？花蛤的蛤、蛋挞的挞读几声？姓氏与日常易读错字挑战</div>
           <div class="mode-meta">选择 / 填空 · 5 回合 / 10 回合 / 无限连对</div>
         </div>
@@ -195,7 +195,7 @@
     <div class="bomb-menu-body">
       <div class="bomb-rules">
         <div class="bomb-rules-title">玩法</div>
-        <p>系统给出两字词的拼音首字母组合（如 <b>B+M</b>，即首字声母 <b>B</b>、次字声母 <b>M</b>），例如「保密 <b>b</b>ǎo<b>m</b>ì」「报名 <b>b</b>ào<b>m</b>íng」「避免 <b>b</b>ì<b>m</b>iǎn」「部门 <b>b</b>ù<b>m</b>én」。在所有符合首字母的词中，系统随机暗藏<b>唯一一个炸弹词</b>。大家轮流说词，安全词逐个排除，候选越来越少——<b>谁说出炸弹词谁输</b>。小诗AI也不知道炸弹是哪个，人人平等，全拼词汇量与胆识。</p>
+        <p>系统给出两字词的拼音<b>首字母组合</b>（即首字声母 + 次字声母）。在所有符合首字母的词中，系统随机暗藏<b>唯一一个炸弹词</b>。大家轮流说词，安全词逐个排除，候选越来越少——<b>谁说出炸弹词谁输</b>。小诗AI也不知道炸弹是哪个，人人平等，全拼词汇量与胆识。</p>
       </div>
 
       <div class="bomb-menu-list">
@@ -327,7 +327,11 @@
       <!-- 滚动态 -->
       <div class="daily-scroll" id="daily-scroll" style="display:none;">
         <div class="daily-scroll-label">诗句滚动中…</div>
-        <div class="daily-scroll-line" id="daily-scroll-line"></div>
+        <div class="daily-scroll-frame">
+          <div class="daily-scroll-band"></div>
+          <div class="daily-scroll-track" id="daily-scroll-track"></div>
+        </div>
+        <div class="daily-scroll-hint">中缝定格的那句，就是本局诗句</div>
       </div>
 
       <!-- 答题态 -->
@@ -437,7 +441,7 @@
     </div>
 
     <!-- 游戏态 -->
-    <div class="rc-play" id="rc-play" style="display:none;">
+    <div class="rc-game" id="rc-game" style="display:none;">
       <div class="rc-status">
         <span id="rc-progress">第 1 题</span>
         <span id="rc-score">得分 0</span>
@@ -530,22 +534,22 @@
 </div>
 
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-<script src="scores.js?v=26"></script>
-<script src="rare-chars-db.js?v=26"></script>
-<script src="rare-chars.js?v=26"></script>
-<script src="poetry-extra-tang.js?v=26"></script>
-<script src="poetry-extra-songci.js?v=26"></script>
-<script src="poetry-extra-classic.js?v=26"></script>
-<script src="poetry-db.js?v=26"></script>
-<script src="fly-flower.js?v=26"></script>
-<script src="chain.js?v=26"></script>
-<script src="idiom-db.js?v=26"></script>
-<script src="idiom-chain.js?v=26"></script>
-<script src="word-bank.js?v=26"></script>
-<script src="bomb.js?v=26"></script>
-<script src="bomb-online.js?v=26"></script>
-<script src="daily-challenge.js?v=26"></script>
-<script src="app.js?v=26"></script>
+<script src="scores.js?v=27"></script>
+<script src="rare-chars-db.js?v=27"></script>
+<script src="rare-chars.js?v=27"></script>
+<script src="poetry-extra-tang.js?v=27"></script>
+<script src="poetry-extra-songci.js?v=27"></script>
+<script src="poetry-extra-classic.js?v=27"></script>
+<script src="poetry-db.js?v=27"></script>
+<script src="fly-flower.js?v=27"></script>
+<script src="chain.js?v=27"></script>
+<script src="idiom-db.js?v=27"></script>
+<script src="idiom-chain.js?v=27"></script>
+<script src="word-bank.js?v=27"></script>
+<script src="bomb.js?v=27"></script>
+<script src="bomb-online.js?v=27"></script>
+<script src="daily-challenge.js?v=27"></script>
+<script src="app.js?v=27"></script>
 <script>
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
     navigator.serviceWorker.register('sw.js').catch(() => {});

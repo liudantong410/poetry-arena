@@ -1008,6 +1008,10 @@ const App = {
     document.getElementById('daily-scroll').style.display = 'block';
     document.getElementById('daily-quiz').style.display = 'none';
     document.getElementById('daily-reveal').style.display = 'none';
+    // 清空滚动轨道
+    const track = document.getElementById('daily-scroll-track');
+    track.innerHTML = '';
+    track.style.transform = 'translateY(58px)';
 
     this.dailyGame = new DailyChallenge();
     this.dailyGame.onPhaseChange = s => this.renderDaily(s);
@@ -1017,8 +1021,15 @@ const App = {
 
   renderDaily(s) {
     if (s.phase === 'scrolling') {
-      const el = document.getElementById('daily-scroll-line');
-      el.textContent = s.displayLine || '';
+      // 滚动框：逐句入轨，最新一行滑向中缝；final 时定格目标句
+      const track = document.getElementById('daily-scroll-track');
+      const item = document.createElement('div');
+      item.className = 'daily-scroll-item' + (s.final ? ' final' : '');
+      item.textContent = s.displayLine || '';
+      track.appendChild(item);
+      const ROW = 58;  // 与 .daily-scroll-item 行高一致
+      const k = track.children.length - 1;
+      track.style.transform = `translateY(${(1 - k) * ROW}px)`;
     } else if (s.phase === 'quiz') {
       document.getElementById('daily-scroll').style.display = 'none';
       document.getElementById('daily-quiz').style.display = 'block';
@@ -1084,7 +1095,7 @@ const App = {
     this.rareGame = null;
     this.show('screen-rare-chars');
     document.getElementById('rc-setup').style.display = 'flex';
-    document.getElementById('rc-play').style.display = 'none';
+    document.getElementById('rc-game').style.display = 'none';
     document.getElementById('rc-over').style.display = 'none';
     document.getElementById('rc-mode-tip').style.display = this.rareRounds === 0 ? 'block' : 'none';
   },
@@ -1094,7 +1105,7 @@ const App = {
     this.rareLocked = false;
     document.getElementById('rc-setup').style.display = 'none';
     document.getElementById('rc-over').style.display = 'none';
-    document.getElementById('rc-play').style.display = 'flex';
+    document.getElementById('rc-game').style.display = 'flex';
     const hintBtn = document.getElementById('btn-rc-hint');
     hintBtn.textContent = '提示 ×3';
     hintBtn.disabled = false;
@@ -1231,7 +1242,7 @@ const App = {
   showRareOver() {
     const g = this.rareGame;
     if (!g) return;
-    document.getElementById('rc-play').style.display = 'none';
+    document.getElementById('rc-game').style.display = 'none';
     document.getElementById('rc-over').style.display = 'flex';
 
     const rec = Scores.addResult('rare-chars', g.score);

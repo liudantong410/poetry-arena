@@ -106,10 +106,14 @@ class DailyChallenge {
       if (this.onPhaseChange) this.onPhaseChange({ phase: 'scrolling', displayLine: randomLine.line });
 
       if (elapsed >= totalDuration) {
-        // 定格到目标句
-        this.phase = 'quiz';
-        console.log('[Daily] 转入 quiz 阶段, answers=', this.answers, 'options=', this.options);
-        this.notify();
+        // 先定格到目标句（滚动框中缝锁住本局诗句），停留片刻再进入答题
+        if (this.onPhaseChange) {
+          this.onPhaseChange({ phase: 'scrolling', displayLine: this.targetLine, final: true });
+        }
+        this.scrollTimer = setTimeout(() => {
+          this.phase = 'quiz';
+          this.notify();
+        }, 1200);
       } else {
         // 减速
         interval = Math.min(interval + 20, 250);
