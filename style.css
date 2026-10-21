@@ -1368,13 +1368,20 @@ body {
 }
 /* 滚动结束 → 答题：定格行上移到顶部，框缩成一行 */
 .daily-scroll-frame.scroll-to-top {
-  height: 36px;
+  height: 56px;  /* 定格行加高，持续留存在答题面板顶部 */
 }
 .daily-scroll-frame.scroll-to-top .daily-scroll-band,
 .daily-scroll-frame.scroll-to-top::before,
 .daily-scroll-frame.scroll-to-top::after {
   opacity: 0;
   transition: opacity .3s;
+}
+/* 定格行放大填满定格框 */
+.daily-scroll-frame.scroll-to-top .daily-scroll-item.final {
+  height: 56px;
+  line-height: 56px;
+  font-size: 26px;
+  transition: height .6s ease, line-height .6s ease, font-size .6s ease, color .3s ease, font-weight .3s ease;
 }
 .daily-scroll-item {
   width: 100%;
