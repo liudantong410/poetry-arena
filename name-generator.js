@@ -35,7 +35,140 @@ const NAME_STYLES = [
 /* ========== 二、用途（先选） ========== */
 const NAME_PURPOSES = [
   { id: 'game', name: '起游戏ID', desc: '截取自诗词原句，带出处' },
-  { id: 'baby', name: '给宝宝起名', desc: '加姓氏，优先成语 / 易经 / 君子九如 / 龙生九子 / 诗经' }
+  { id: 'baby', name: '给宝宝起名', desc: '加姓氏，优先成语 / 易经 / 君子九如 / 龙生九子 / 诗经' },
+  { id: 'couple', name: '情侣网名', desc: '从表达思念爱意的诗句中成对提取' }
+];
+
+/* ========== 情侣网名精选对（双向可查） ========== */
+const COUPLE_PAIRS = [
+  { a: '绵绵', b: '远道', line: '绵绵思远道', from: '汉乐府·饮马长城窟行' },
+  { a: '彩凤', b: '灵犀', line: '身无彩凤双飞翼，心有灵犀一点通', from: '唐·李商隐·无题' },
+  { a: '金风', b: '玉露', line: '金风玉露一相逢，便胜却人间无数', from: '宋·秦观·鹊桥仙' },
+  { a: '朝朝', b: '暮暮', line: '两情若是久长时，又岂在朝朝暮暮', from: '宋·秦观·鹊桥仙' },
+  { a: '纤云', b: '飞星', line: '纤云弄巧，飞星传恨', from: '宋·秦观·鹊桥仙' },
+  { a: '盈盈', b: '脉脉', line: '盈盈一水间，脉脉不得语', from: '汉·迢迢牵牛星' },
+  { a: '牵牛', b: '织女', line: '迢迢牵牛星，皎皎河汉女', from: '汉·迢迢牵牛星' },
+  { a: '迢迢', b: '皎皎', line: '迢迢牵牛星，皎皎河汉女', from: '汉·迢迢牵牛星' },
+  { a: '南风', b: '西洲', line: '南风知我意，吹梦到西洲', from: '南朝乐府·西洲曲' },
+  { a: '如星', b: '如月', line: '愿我如星君如月，夜夜流光相皎洁', from: '宋·范成大·车遥遥篇' },
+  { a: '君心', b: '我心', line: '只愿君心似我心，定不负相思意', from: '宋·李之仪·卜算子' },
+  { a: '磐石', b: '蒲苇', line: '君当作磐石，妾当作蒲苇', from: '汉乐府·孔雀东南飞' },
+  { a: '竹马', b: '青梅', line: '郎骑竹马来，绕床弄青梅', from: '唐·李白·长干行' },
+  { a: '比翼', b: '连理', line: '在天愿作比翼鸟，在地愿为连理枝', from: '唐·白居易·长恨歌' },
+  { a: '沧海', b: '巫山', line: '曾经沧海难为水，除却巫山不是云', from: '唐·元稹·离思' },
+  { a: '锦瑟', b: '华年', line: '锦瑟无端五十弦，一弦一柱思华年', from: '唐·李商隐·锦瑟' },
+  { a: '红豆', b: '相思', line: '玲珑骰子安红豆，入骨相思知不知', from: '唐·温庭筠·南歌子词' },
+  { a: '双丝', b: '千结', line: '心似双丝网，中有千千结', from: '宋·张先·千秋岁' },
+  { a: '星垂', b: '月涌', line: '星垂平野阔，月涌大江流', from: '唐·杜甫·旅夜书怀' },
+  { a: '蒹葭', b: '白露', line: '蒹葭苍苍，白露为霜', from: '诗经·秦风·蒹葭' },
+  { a: '满月', b: '清辉', line: '思君如满月，夜夜减清辉', from: '唐·张九龄·赋得自君之出矣' },
+  { a: '一心', b: '白首', line: '愿得一心人，白头不相离', from: '汉·卓文君·白头吟' },
+  { a: '羁鸟', b: '池鱼', line: '羁鸟恋旧林，池鱼思故渊', from: '魏晋·陶渊明·归园田居' },
+  { a: '旧林', b: '故渊', line: '羁鸟恋旧林，池鱼思故渊', from: '魏晋·陶渊明·归园田居' },
+  { a: '春蚕', b: '蜡炬', line: '春蚕到死丝方尽，蜡炬成灰泪始干', from: '唐·李商隐·无题' },
+  { a: '比目', b: '鸳鸯', line: '得成比目何辞死，愿作鸳鸯不羡仙', from: '唐·卢照邻·长安古意' },
+  { a: '海内', b: '天涯', line: '海内存知己，天涯若比邻', from: '唐·王勃·送杜少府之任蜀州' },
+  { a: '游子', b: '故人', line: '浮云游子意，落日故人情', from: '唐·李白·送友人' },
+  { a: '沉舟', b: '病树', line: '沉舟侧畔千帆过，病树前头万木春', from: '唐·刘禹锡·酬乐天扬州初逢席上见赠' },
+  /* —— 诗经：对仗双名 —— */
+  { a: '天长', b: '地久', line: '天长地久有时尽，此恨绵绵无绝期', from: '唐·白居易·长恨歌' },
+  { a: '天涯', b: '地角', line: '天涯地角有穷时，只有相思无尽处', from: '宋·晏殊·玉楼春' },
+  { a: '西窗', b: '巴山', line: '何当共剪西窗烛，却话巴山夜雨时', from: '唐·李商隐·夜雨寄北' },
+  { a: '红豆', b: '南国', line: '红豆生南国，春来发几枝', from: '唐·王维·相思' },
+  { a: '执手', b: '偕老', line: '执子之手，与子偕老', from: '诗经·邶风·击鼓' },
+  { a: '琴瑟', b: '静好', line: '琴瑟在御，莫不静好', from: '诗经·郑风·女曰鸡鸣' },
+  { a: '子衿', b: '悠悠', line: '青青子衿，悠悠我心', from: '诗经·郑风·子衿' },
+  { a: '夭夭', b: '灼灼', line: '桃之夭夭，灼灼其华', from: '诗经·周南·桃夭' },
+  { a: '依依', b: '霏霏', line: '昔我往矣，杨柳依依；今我来思，雨雪霏霏', from: '诗经·小雅·采薇' },
+  { a: '木桃', b: '琼瑶', line: '投我以木桃，报之以琼瑶', from: '诗经·卫风·木瓜' },
+  { a: '雎鸠', b: '河洲', line: '关关雎鸠，在河之洲', from: '诗经·周南·关雎' },
+  { a: '淑女', b: '君子', line: '窈窕淑女，君子好逑', from: '诗经·周南·关雎' },
+  { a: '伊人', b: '一方', line: '所谓伊人，在水一方', from: '诗经·秦风·蒹葭' },
+  { a: '扶苏', b: '荷华', line: '山有扶苏，隰有荷华', from: '诗经·郑风·山有扶苏' },
+  { a: '零露', b: '清扬', line: '野有蔓草，零露漙兮；有美一人，清扬婉兮', from: '诗经·郑风·野有蔓草' },
+  { a: '鹿鸣', b: '野苹', line: '呦呦鹿鸣，食野之苹', from: '诗经·小雅·鹿鸣' },
+  { a: '鼓瑟', b: '吹笙', line: '我有嘉宾，鼓瑟吹笙', from: '诗经·小雅·鹿鸣' },
+  { a: '丁丁', b: '嘤嘤', line: '伐木丁丁，鸟鸣嘤嘤', from: '诗经·小雅·伐木' },
+  { a: '白驹', b: '空谷', line: '皎皎白驹，在彼空谷', from: '诗经·小雅·白驹' },
+  { a: '今夕', b: '良人', line: '今夕何夕，见此良人', from: '诗经·唐风·绸缪' },
+  { a: '采萧', b: '三秋', line: '彼采萧兮，一日不见，如三秋兮', from: '诗经·王风·采葛' },
+  /* —— 楚辞 / 汉魏六朝 —— */
+  { a: '沅芷', b: '澧兰', line: '沅有芷兮澧有兰，思公子兮未敢言', from: '楚辞·九歌·湘夫人' },
+  { a: '坠露', b: '落英', line: '朝饮木兰之坠露兮，夕餐秋菊之落英', from: '楚辞·离骚' },
+  { a: '芰荷', b: '芙蓉', line: '制芰荷以为衣兮，集芙蓉以为裳', from: '楚辞·离骚' },
+  { a: '云衣', b: '霓裳', line: '青云衣兮白霓裳，举长矢兮射天狼', from: '楚辞·九歌·东君' },
+  { a: '惊鸿', b: '游龙', line: '翩若惊鸿，婉若游龙', from: '魏晋·曹植·洛神赋' },
+  { a: '秋菊', b: '春松', line: '荣曜秋菊，华茂春松', from: '魏晋·曹植·洛神赋' },
+  { a: '凌波', b: '罗袜', line: '凌波微步，罗袜生尘', from: '魏晋·曹植·洛神赋' },
+  { a: '朝霞', b: '渌波', line: '皎若太阳升朝霞，灼若芙蕖出渌波', from: '魏晋·曹植·洛神赋' },
+  { a: '双鲤', b: '尺素', line: '客从远方来，遗我双鲤鱼；呼儿烹鲤鱼，中有尺素书', from: '汉乐府·饮马长城窟行' },
+  { a: '胡马', b: '越鸟', line: '胡马依北风，越鸟巢南枝', from: '汉·古诗十九首' },
+  { a: '北风', b: '南枝', line: '胡马依北风，越鸟巢南枝', from: '汉·古诗十九首' },
+  { a: '冬雷', b: '夏雪', line: '冬雷震震，夏雨雪', from: '汉乐府·上邪' },
+  { a: '冰心', b: '玉壶', line: '洛阳亲友如相问，一片冰心在玉壶', from: '唐·王昌龄·芙蓉楼送辛渐' },
+  { a: '两小', b: '无猜', line: '同居长干里，两小无嫌猜', from: '唐·李白·长干行' },
+  { a: '抱柱', b: '望夫', line: '常存抱柱信，岂上望夫台', from: '唐·李白·长干行' },
+  { a: '明月', b: '天涯', line: '海上生明月，天涯共此时', from: '唐·张九龄·望月怀远' },
+  { a: '遥夜', b: '相思', line: '情人怨遥夜，竟夕起相思', from: '唐·张九龄·望月怀远' },
+  { a: '比肩', b: '连理', line: '愿作远方兽，步步比肩行；愿作深山木，枝枝连理生', from: '唐·白居易·长相思' },
+  /* —— 唐宋：对仗双名 —— */
+  { a: '锦书', b: '雁字', line: '云中谁寄锦书来，雁字回时，月满西楼', from: '宋·李清照·一剪梅' },
+  { a: '眉头', b: '心头', line: '此情无计可消除，才下眉头，却上心头', from: '宋·李清照·一剪梅' },
+  { a: '飞花', b: '丝雨', line: '自在飞花轻似梦，无边丝雨细如愁', from: '宋·秦观·浣溪沙' },
+  { a: '柔情', b: '佳期', line: '柔情似水，佳期如梦', from: '宋·秦观·鹊桥仙' },
+  { a: '楼台', b: '津渡', line: '雾失楼台，月迷津渡', from: '宋·秦观·踏莎行' },
+  { a: '驿梅', b: '鱼素', line: '驿寄梅花，鱼传尺素', from: '宋·秦观·踏莎行' },
+  { a: '凌波', b: '横塘', line: '凌波不过横塘路', from: '宋·贺铸·青玉案' },
+  { a: '烟草', b: '风絮', line: '一川烟草，满城风絮', from: '宋·贺铸·青玉案' },
+  { a: '人面', b: '桃花', line: '人面不知何处去，桃花依旧笑春风', from: '唐·崔护·题都城南庄' },
+  { a: '落花', b: '微雨', line: '落花人独立，微雨燕双飞', from: '宋·晏几道·临江仙' },
+  { a: '明月', b: '彩云', line: '当时明月在，曾照彩云归', from: '宋·晏几道·临江仙' },
+  { a: '楼心月', b: '扇底风', line: '舞低杨柳楼心月，歌尽桃花扇底风', from: '宋·晏几道·鹧鸪天' },
+  { a: '青鸟', b: '丁香', line: '青鸟不传云外信，丁香空结雨中愁', from: '五代·李璟·摊破浣溪沙' },
+  { a: '细雨', b: '小楼', line: '细雨梦回鸡塞远，小楼吹彻玉笙寒', from: '五代·李璟·摊破浣溪沙' },
+  { a: '蓬山', b: '青鸟', line: '蓬山此去无多路，青鸟殷勤为探看', from: '唐·李商隐·无题' },
+  { a: '云鬓', b: '月光', line: '晓镜但愁云鬓改，夜吟应觉月光寒', from: '唐·李商隐·无题' },
+  { a: '蝴蝶', b: '杜鹃', line: '庄生晓梦迷蝴蝶，望帝春心托杜鹃', from: '唐·李商隐·锦瑟' },
+  { a: '沧海', b: '蓝田', line: '沧海月明珠有泪，蓝田日暖玉生烟', from: '唐·李商隐·锦瑟' },
+  { a: '明珠', b: '暖玉', line: '沧海月明珠有泪，蓝田日暖玉生烟', from: '唐·李商隐·锦瑟' },
+  { a: '春花', b: '秋月', line: '春花秋月何时了', from: '五代·李煜·虞美人' },
+  { a: '红叶', b: '黄花', line: '红叶黄花秋意晚，千里念行客', from: '宋·晏几道·思远人' },
+  { a: '鸿雁', b: '鱼龙', line: '鸿雁长飞光不度，鱼龙潜跃水成文', from: '唐·张若虚·春江花月夜' },
+  { a: '春江', b: '海月', line: '春江潮水连海平，海上明月共潮生', from: '唐·张若虚·春江花月夜' },
+  { a: '白云', b: '青枫', line: '白云一片去悠悠，青枫浦上不胜愁', from: '唐·张若虚·春江花月夜' },
+  { a: '碣石', b: '潇湘', line: '斜月沉沉藏海雾，碣石潇湘无限路', from: '唐·张若虚·春江花月夜' },
+  { a: '明月', b: '清泉', line: '明月松间照，清泉石上流', from: '唐·王维·山居秋暝' },
+  { a: '新雨', b: '晚秋', line: '空山新雨后，天气晚来秋', from: '唐·王维·山居秋暝' },
+  { a: '竹喧', b: '莲动', line: '竹喧归浣女，莲动下渔舟', from: '唐·王维·山居秋暝' },
+  { a: '水穷', b: '云起', line: '行到水穷处，坐看云起时', from: '唐·王维·终南别业' },
+  { a: '桂花', b: '春山', line: '人闲桂花落，夜静春山空', from: '唐·王维·鸟鸣涧' },
+  { a: '山鸟', b: '春涧', line: '月出惊山鸟，时鸣春涧中', from: '唐·王维·鸟鸣涧' },
+  { a: '大漠', b: '长河', line: '大漠孤烟直，长河落日圆', from: '唐·王维·使至塞上' },
+  { a: '孤烟', b: '落日', line: '大漠孤烟直，长河落日圆', from: '唐·王维·使至塞上' },
+  { a: '江流', b: '山色', line: '江流天地外，山色有无中', from: '唐·王维·汉江临泛' },
+  { a: '浮云', b: '落日', line: '浮云游子意，落日故人情', from: '唐·李白·送友人' },
+  { a: '青山', b: '白水', line: '青山横北郭，白水绕东城', from: '唐·李白·送友人' },
+  { a: '平野', b: '大荒', line: '山随平野尽，江入大荒流', from: '唐·李白·渡荆门送别' },
+  { a: '天镜', b: '海楼', line: '月下飞天镜，云生结海楼', from: '唐·李白·渡荆门送别' },
+  { a: '众鸟', b: '孤云', line: '众鸟高飞尽，孤云独去闲', from: '唐·李白·独坐敬亭山' },
+  { a: '飞流', b: '银河', line: '飞流直下三千尺，疑是银河落九天', from: '唐·李白·望庐山瀑布' },
+  { a: '早莺', b: '新燕', line: '几处早莺争暖树，谁家新燕啄春泥', from: '唐·白居易·钱塘湖春行' },
+  { a: '乱花', b: '浅草', line: '乱花渐欲迷人眼，浅草才能没马蹄', from: '唐·白居易·钱塘湖春行' },
+  { a: '黄鹂', b: '白鹭', line: '两个黄鹂鸣翠柳，一行白鹭上青天', from: '唐·杜甫·绝句' },
+  { a: '千秋雪', b: '万里船', line: '窗含西岭千秋雪，门泊东吴万里船', from: '唐·杜甫·绝句' },
+  { a: '燕子', b: '鸳鸯', line: '泥融飞燕子，沙暖睡鸳鸯', from: '唐·杜甫·绝句二首' },
+  { a: '江碧', b: '山青', line: '江碧鸟逾白，山青花欲燃', from: '唐·杜甫·绝句二首' },
+  { a: '海日', b: '江春', line: '海日生残夜，江春入旧年', from: '唐·王湾·次北固山下' },
+  { a: '野旷', b: '江清', line: '野旷天低树，江清月近人', from: '唐·孟浩然·宿建德江' },
+  { a: '千山', b: '万径', line: '千山鸟飞绝，万径人踪灭', from: '唐·柳宗元·江雪' },
+  { a: '孤舟', b: '寒江', line: '孤舟蓑笠翁，独钓寒江雪', from: '唐·柳宗元·江雪' },
+  { a: '白日', b: '黄河', line: '白日依山尽，黄河入海流', from: '唐·王之涣·登鹳雀楼' },
+  { a: '蝉噪', b: '鸟鸣', line: '蝉噪林逾静，鸟鸣山更幽', from: '南朝·王籍·入若耶溪' },
+  { a: '余霞', b: '澄江', line: '余霞散成绮，澄江静如练', from: '南朝·谢朓·晚登三山还望京邑' },
+  { a: '春草', b: '鸣禽', line: '池塘生春草，园柳变鸣禽', from: '南朝·谢灵运·登池上楼' },
+  { a: '细雨', b: '微风', line: '细雨鱼儿出，微风燕子斜', from: '唐·杜甫·水槛遣心' },
+  { a: '山月', b: '水风', line: '山月不知心里事，水风空落眼前花', from: '唐·温庭筠·梦江南' },
+  { a: '柳梢', b: '黄昏', line: '月上柳梢头，人约黄昏后', from: '宋·欧阳修·生查子' }
 ];
 
 /* ========== 三、游戏类型（只限游戏ID） ========== */
@@ -527,6 +660,122 @@ class NameGenerator {
       dynasty: c.poem.d,
       line: c.line
     }));
+  }
+
+  /* ---------- 情侣网名：生成一对（精选对 + 算法成对） ---------- */
+  generateCouplePairs(count = 6) {
+    const out = [];
+    // 1) 精选对
+    for (const p of COUPLE_PAIRS) {
+      out.push({ nameA: p.a, nameB: p.b, line: p.line, title: p.from, author: '', dynasty: '', score: 20 + Math.random() });
+    }
+    // 2) 算法成对：同句中两个不重叠的优质片段（不跨诗）
+    const allPoems = (typeof POETRY_DB !== 'undefined') ? POETRY_DB : [];
+    for (const poem of allPoems) {
+      for (const line of (poem.lines || [])) {
+        const clean = line.replace(/[，。！？、；：""''（）《》\s]/g, '');
+        const chars = toCharArr(clean).filter(isGoodChar);
+        if (chars.length < 4 || chars.length > 14) continue;
+        // AA + XY 型（如"绵绵思远道"→ 绵绵/远道）
+        for (let i = 0; i + 1 < chars.length; i++) {
+          if (chars[i] === chars[i + 1] && isGoodDup(chars[i], null)) {
+            for (let j = 0; j + 1 < chars.length; j++) {
+              if (j >= i - 1 && j <= i + 2) continue; // 不与叠字重叠
+              const b = chars[j] + chars[j + 1];
+              const sb = scoreFragment(b, null);
+              if (sb >= 2.4) out.push({ nameA: chars[i] + chars[i + 1], nameB: b, line, title: poem.t, author: poem.a, dynasty: poem.d, score: sb + 4 });
+            }
+          }
+        }
+        // XY + ZW 型（如"金风玉露一相逢"→ 金风/玉露）
+        for (let i = 0; i + 1 < chars.length; i++) {
+          const a = chars[i] + chars[i + 1];
+          const sa = scoreFragment(a, null);
+          if (sa < 2.4) continue;
+          for (let j = i + 2; j + 1 < chars.length; j++) {
+            const b = chars[j] + chars[j + 1];
+            const sb = scoreFragment(b, null);
+            if (sb < 2.4) continue;
+            out.push({ nameA: a, nameB: b, line, title: poem.t, author: poem.a, dynasty: poem.d, score: sa + sb });
+          }
+        }
+      }
+    }
+    // 去重（无序对）
+    const seen = new Set();
+    const uniq = [];
+    for (const r of out) {
+      const key = [r.nameA, r.nameB].sort().join('|');
+      if (seen.has(key)) continue;
+      seen.add(key);
+      uniq.push(r);
+    }
+    uniq.sort((x, y) => ((y.score || 0) + Math.random()) - ((x.score || 0) + Math.random()));
+    return uniq.slice(0, count);
+  }
+
+  /* ---------- 情侣网名：已有另一半名字，匹配另一半 ---------- */
+  matchCoupleName(partner, count = 12) {
+    const p = (partner || '').trim();
+    if (!p) return [];
+    const out = [];
+    // 1) 精选对双向匹配
+    for (const pair of COUPLE_PAIRS) {
+      if (pair.a === p) out.push({ name: pair.b, line: pair.line, title: pair.from, author: '', dynasty: '', score: 20 });
+      else if (pair.b === p) out.push({ name: pair.a, line: pair.line, title: pair.from, author: '', dynasty: '', score: 20 });
+    }
+    // 2) 全诗库：找到含伴侣名的诗句，优先取上下句"同位置对仗"的片段（诗词真正的语义配对）
+    const allPoems = (typeof POETRY_DB !== 'undefined') ? POETRY_DB : [];
+    const punctRe = /[，。！？、；：""''（）《》\s]/g;
+    for (const poem of allPoems) {
+      const lines = poem.lines || [];
+      for (let i = 0; i < lines.length; i++) {
+        const clean = lines[i].replace(punctRe, '');
+        const pi = clean.indexOf(p);
+        if (pi < 0) continue;
+        const pushCand = (name, fromLine, base) => {
+          if (!name || name === p) return;
+          if (toCharArr(name).some(ch => !isGoodChar(ch))) return;
+          const s = scoreFragment(name, null);
+          if (s <= -90) return; // 含虚词
+          // 非对仗位置的扫描片段必须含意象字，避免"鸟恋旧"类跨词碎片
+          if (base < 6 && s < 2) return;
+          out.push({ name, line: fromLine, title: poem.t, author: poem.a, dynasty: poem.d, score: base + s });
+        };
+        // 上下句（对仗句）：同位置最强，其余片段次之
+        for (const j of [i - 1, i + 1]) {
+          if (j < 0 || j >= lines.length) continue;
+          const c2 = lines[j].replace(punctRe, '');
+          pushCand(c2.substr(pi, p.length), lines[j], 6); // 对仗位置，如 池鱼↔羁鸟
+          for (let len = 2; len <= 3; len++)
+            for (let k = 0; k + len <= c2.length; k++)
+              pushCand(c2.substr(k, len), lines[j], 2);
+          const sc = toCharArr(c2).filter(isGoodChar);
+          for (let k = 0; k + 1 < sc.length; k++)
+            if (sc[k] === sc[k + 1] && isGoodDup(sc[k], null))
+              pushCand(sc[k] + sc[k + 1], lines[j], 3);
+        }
+        // 同句其余片段（较弱）
+        for (const seg of [clean.slice(0, pi), clean.slice(pi + p.length)]) {
+          for (let len = 2; len <= 3; len++)
+            for (let k = 0; k + len <= seg.length; k++)
+              pushCand(seg.substr(k, len), lines[i], 0.5);
+          const sc = toCharArr(seg).filter(isGoodChar);
+          for (let k = 0; k + 1 < sc.length; k++)
+            if (sc[k] === sc[k + 1] && isGoodDup(sc[k], null))
+              pushCand(sc[k] + sc[k + 1], lines[i], 1.5);
+        }
+      }
+    }
+    // 去重留最高
+    const byName = new Map();
+    for (const c of out) {
+      if (c.name === p) continue;
+      if (!byName.has(c.name) || byName.get(c.name).score < c.score) byName.set(c.name, c);
+    }
+    const list = Array.from(byName.values());
+    list.sort((a, b) => ((b.score || 0) + Math.random() * 0.5) - ((a.score || 0) + Math.random() * 0.5));
+    return list.slice(0, count);
   }
 
   /* ---------- 可用出处（带数量） ---------- */

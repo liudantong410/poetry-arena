@@ -6,9 +6,9 @@
   <meta name="description" content="诗阵 — 面向资深诗词爱好者的纯诗词高难度挑战网页游戏">
   <meta name="theme-color" content="#2b3a42">
   <title>诗阵 · 诗词挑战</title>
-  <link rel="manifest" href="manifest.json?v=42">
+  <link rel="manifest" href="manifest.json?v=46">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' fill='%23c41e3a'>诗</text></svg>">
-  <link rel="stylesheet" href="style.css?v=42">
+  <link rel="stylesheet" href="style.css?v=46">
 </head>
 <body>
 
@@ -566,6 +566,19 @@
         <div class="round-buttons" id="naming-gametype-buttons"></div>
       </div>
 
+      <div class="rc-group" id="ng-couple-group" style="display:none;">
+        <div class="section-label">是否已有另一半的名字</div>
+        <div class="round-buttons" id="naming-couple-buttons"></div>
+      </div>
+
+      <div class="rc-group" id="ng-couple-input-group" style="display:none;">
+        <div class="section-label">另一半的名字 / 雏形</div>
+        <input type="text" class="mini-input" id="naming-partner" placeholder="如：绵绵" maxlength="4">
+        <div class="round-buttons" style="margin-top:10px;justify-content:center;">
+          <button class="round-btn" id="btn-couple-match">生成匹配</button>
+        </div>
+      </div>
+
       <div class="rc-group" id="ng-style-group" style="display:none;">
         <div class="section-label">风格</div>
         <div class="round-buttons" id="naming-style-buttons"></div>
@@ -600,23 +613,23 @@
 </div>
 
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-<script src="scores.js?v=42"></script>
-<script src="rare-chars-db.js?v=42"></script>
-<script src="rare-chars.js?v=42"></script>
-<script src="poetry-extra-tang.js?v=42"></script>
-<script src="poetry-extra-songci.js?v=42"></script>
-<script src="poetry-extra-classic.js?v=42"></script>
-<script src="poetry-db.js?v=42"></script>
-<script src="fly-flower.js?v=42"></script>
-<script src="chain.js?v=42"></script>
-<script src="idiom-db.js?v=42"></script>
-<script src="idiom-chain.js?v=42"></script>
-<script src="word-bank.js?v=42"></script>
-<script src="bomb.js?v=42"></script>
-<script src="bomb-online.js?v=42"></script>
-<script src="daily-challenge.js?v=42"></script>
-<script src="name-generator.js?v=42"></script>
-<script src="app.js?v=42"></script>
+<script src="scores.js?v=46"></script>
+<script src="rare-chars-db.js?v=46"></script>
+<script src="rare-chars.js?v=46"></script>
+<script src="poetry-extra-tang.js?v=46"></script>
+<script src="poetry-extra-songci.js?v=46"></script>
+<script src="poetry-extra-classic.js?v=46"></script>
+<script src="poetry-db.js?v=46"></script>
+<script src="fly-flower.js?v=46"></script>
+<script src="chain.js?v=46"></script>
+<script src="idiom-db.js?v=46"></script>
+<script src="idiom-chain.js?v=46"></script>
+<script src="word-bank.js?v=46"></script>
+<script src="bomb.js?v=46"></script>
+<script src="bomb-online.js?v=46"></script>
+<script src="daily-challenge.js?v=46"></script>
+<script src="name-generator.js?v=46"></script>
+<script src="app.js?v=46"></script>
 <script>
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
     navigator.serviceWorker.register('sw.js').catch(() => {});

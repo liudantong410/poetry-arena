@@ -1158,6 +1158,21 @@ const App = {
       btn.addEventListener('click', () => this.namingPickGameType(btn.dataset.gtype));
     });
 
+    // 2b. 情侣模式按钮
+    this.namingCoupleMode = null;
+    const cRow = document.getElementById('naming-couple-buttons');
+    cRow.innerHTML = [
+      { id: 'match', name: '已有另一半名字' },
+      { id: 'pair', name: '还没有，生成一对' }
+    ].map(c => `<button class="round-btn" data-cmode="${c.id}">${c.name}</button>`).join('');
+    cRow.querySelectorAll('.round-btn').forEach(btn => {
+      btn.addEventListener('click', () => this.namingPickCoupleMode(btn.dataset.cmode));
+    });
+    document.getElementById('btn-couple-match').onclick = () => this.namingCoupleMatchGenerate();
+    document.getElementById('naming-partner').onkeydown = (e) => {
+      if (e.key === 'Enter') this.namingCoupleMatchGenerate();
+    };
+
     // 3. 风格按钮
     const sRow = document.getElementById('naming-style-buttons');
     sRow.innerHTML = NAME_STYLES.map(s =>
@@ -1184,7 +1199,14 @@ const App = {
 
     // 态切换：只显示用途
     this.namingShowStep('purpose');
-    document.getElementById('btn-naming-refresh').onclick = () => this.namingGenerate();
+    document.getElementById('btn-naming-refresh').onclick = () => {
+      if (this.namingPurpose === 'couple') {
+        if (this.namingCoupleMode === 'match') this.namingCoupleMatchGenerate();
+        else this.namingCouplePairGenerate();
+      } else {
+        this.namingGenerate();
+      }
+    };
     document.getElementById('btn-naming-reselect').onclick = () => this.openNaming();
     document.getElementById('btn-naming-back').onclick = () => this.show('screen-home');
   },
@@ -1195,20 +1217,24 @@ const App = {
       document.getElementById('naming-result').style.display = 'none';
     }
     // 累积式显示：选过的步骤留存，不消失
-    const rank = { purpose: 0, game: 1, baby: 1, gametype: 2, style: 3, source: 4, length: 5 }[step] ?? 0;
+    const rank = { purpose: 0, game: 1, baby: 1, couple: 1, gametype: 2, coupleMatch: 2, style: 3, source: 4, length: 5 }[step] ?? 0;
     const show = new Set();
     if (rank >= 1) {
       if (this.namingPurpose === 'game') show.add('ng-gametype-group');
       if (this.namingPurpose === 'baby') show.add('ng-surname-group');
+      if (this.namingPurpose === 'couple') show.add('ng-couple-group');
     }
-    if (rank >= 2) show.add('ng-style-group');
+    if (rank >= 2) {
+      if (this.namingPurpose === 'couple' && this.namingCoupleMode === 'match') show.add('ng-couple-input-group');
+      else if (this.namingPurpose !== 'couple') show.add('ng-style-group');
+    }
     if (rank >= 3) show.add('ng-source-group');
     if (rank >= 4) show.add('ng-length-group');
     if (rank >= 5) show.add('ng-format-group');
-    ['ng-surname-group','ng-gametype-group','ng-style-group','ng-source-group','ng-length-group','ng-format-group']
+    ['ng-surname-group','ng-gametype-group','ng-couple-group','ng-couple-input-group','ng-style-group','ng-source-group','ng-length-group','ng-format-group']
       .forEach(id => document.getElementById(id).style.display = show.has(id) ? 'block' : 'none');
     // 滚动到最新显示的组
-    const visible = ['ng-surname-group','ng-gametype-group','ng-style-group','ng-source-group','ng-length-group','ng-format-group']
+    const visible = ['ng-surname-group','ng-gametype-group','ng-couple-group','ng-couple-input-group','ng-style-group','ng-source-group','ng-length-group','ng-format-group']
       .map(id => document.getElementById(id))
       .filter(el => el.style.display !== 'none');
     if (visible.length) visible[visible.length - 1].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -1222,6 +1248,8 @@ const App = {
 
     if (purpose === 'game') {
       this.namingShowStep('game');
+    } else if (purpose === 'couple') {
+      this.namingShowStep('couple');
     } else {
       this.namingShowStep('baby');
       // 宝宝模式：姓氏输入后自动进入风格
@@ -1293,6 +1321,79 @@ const App = {
     document.querySelectorAll('#naming-format-buttons .round-btn')
       .forEach(b => b.classList.toggle('active', b.dataset.format === fmt));
     this.namingGenerate();
+  },
+
+  namingPickCoupleMode(mode) {
+    this.namingCoupleMode = mode;
+    document.querySelectorAll('#naming-couple-buttons .round-btn')
+      .forEach(b => b.classList.toggle('active', b.dataset.cmode === mode));
+    if (mode === 'match') {
+      this.namingShowStep('coupleMatch');
+      document.getElementById('naming-partner').focus();
+    } else {
+      this.namingCouplePairGenerate();
+    }
+  },
+
+  /* 情侣：生成一对 */
+  namingCouplePairGenerate() {
+    const results = this.namingGen.generateCouplePairs(6);
+    this.namingRenderCouple(results, true,
+      results.length ? '情侣网名 · 成对出自同一句诗' : '暂时没有合适的配对，请再试一次');
+  },
+
+  /* 情侣：匹配另一半 */
+  namingCoupleMatchGenerate() {
+    const partner = document.getElementById('naming-partner').value.trim();
+    if (!partner) {
+      document.getElementById('naming-partner').focus();
+      return;
+    }
+    const results = this.namingGen.matchCoupleName(partner, 12);
+    this.namingRenderCouple(results, false,
+      results.length
+        ? `给「${partner}」匹配的另一半名字 —— 同句提取，有多少给多少`
+        : `没有找到与「${partner}」同句的好名字，换个写法试试`);
+  },
+
+  /* 情侣结果渲染（复用 .ng-card 样式） */
+  namingRenderCouple(results, isPair, tipText) {
+    document.getElementById('naming-setup').style.display = 'none';
+    document.getElementById('naming-result').style.display = 'flex';
+    document.getElementById('naming-result-tip').textContent = tipText;
+
+    const list = document.getElementById('naming-result-list');
+    list.innerHTML = results.map(r => {
+      const display = isPair ? `${r.nameA} × ${r.nameB}` : r.name;
+      const copyText = isPair ? `${r.nameA} / ${r.nameB}` : r.name;
+      const from = r.author ? `${r.dynasty ? r.dynasty + '·' : ''}${r.author}《${r.title}》` : r.title;
+      return `
+      <div class="ng-card">
+        <div class="ng-card-main">
+          <div class="ng-name">${display}</div>
+          <button class="ng-copy" data-name="${copyText}">复制</button>
+        </div>
+        <div class="ng-from">—— ${from}</div>
+        <div class="ng-line">「${r.line}」</div>
+      </div>`;
+    }).join('');
+
+    list.querySelectorAll('.ng-copy').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const input = document.createElement('input');
+        input.value = btn.dataset.name;
+        input.style.position = 'fixed';
+        input.style.opacity = '0';
+        document.body.appendChild(input);
+        input.select();
+        let ok = false;
+        try { ok = document.execCommand('copy'); } catch (err) {}
+        document.body.removeChild(input);
+        btn.textContent = ok ? '已复制' : '复制失败';
+        setTimeout(() => btn.textContent = '复制', 1200);
+      });
+    });
   },
 
   namingGenerate() {
